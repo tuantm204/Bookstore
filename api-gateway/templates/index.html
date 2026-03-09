@@ -7,10 +7,10 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f6f9; color: #333; }
-        .navbar { background: #2c3e50; color: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; }
+        .navbar { background: #2c3e50; color: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
         .navbar h1 { font-size: 24px; }
-        .navbar a { color: white; text-decoration: none; margin-left: 20px; font-size: 16px; }
-        .navbar a:hover { text-decoration: underline; }
+        .nav-links a { color: white; text-decoration: none; margin-left: 20px; font-size: 16px; }
+        .nav-links a:hover { text-decoration: underline; }
         .container { max-width: 1000px; margin: 40px auto; padding: 0 20px; }
         .hero { background: #3498db; color: white; padding: 60px 30px; border-radius: 12px; text-align: center; margin-bottom: 40px; }
         .hero h2 { font-size: 36px; margin-bottom: 10px; }
@@ -22,93 +22,133 @@
         .service-card p { color: #666; font-size: 14px; }
         .service-card .port { color: #3498db; font-weight: bold; font-size: 13px; }
         .service-card .badge { display: inline-block; margin-top: 10px; padding: 4px 12px; background: #3498db; color: white; border-radius: 20px; font-size: 12px; }
+        .service-card.locked { opacity: 0.5; pointer-events: none; position: relative; }
+        .service-card.locked::after { content: '🔒'; position: absolute; top: 10px; right: 10px; font-size: 20px; }
+        .user-bar { background: #34495e; padding: 10px 30px; display: flex; justify-content: space-between; align-items: center; font-size: 14px; color: #ecf0f1; }
+        .user-bar .user-info { display: flex; align-items: center; gap: 12px; }
+        .user-bar .role-badge { padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 700; text-transform: uppercase; }
+        .role-admin { background: #e74c3c; color: white; }
+        .role-manager { background: #f39c12; color: white; }
+        .role-staff { background: #27ae60; color: white; }
+        .role-customer { background: #3498db; color: white; }
+        .btn-logout { background: #e74c3c; color: white; border: none; padding: 6px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; }
+        .btn-logout:hover { background: #c0392b; }
+        .auth-links { display: flex; gap: 10px; }
+        .btn-auth { padding: 8px 18px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px; }
+        .btn-auth.login { background: #3498db; color: white; }
+        .btn-auth.register { background: #27ae60; color: white; }
+        .btn-auth:hover { opacity: 0.9; }
+        .section-title { margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+        .permission-note { background: #fff3cd; border: 1px solid #ffc107; border-radius: 8px; padding: 12px 16px; margin-bottom: 20px; font-size: 14px; color: #856404; }
     </style>
 </head>
 <body>
     <nav class="navbar">
         <h1>📚 BookStore Microservices</h1>
-        <div>
+        <div class="nav-links">
             <a href="/">Home</a>
             <a href="/pages/books.html">Books</a>
             <a href="/pages/cart.html">Cart</a>
-            <a href="/pages/customers.html">Customers</a>
             <a href="/pages/orders.html">Orders</a>
         </div>
     </nav>
+    <!-- User bar: shows when logged in -->
+    <div class="user-bar" id="userBar" style="display:none">
+        <div class="user-info">
+            <span>👤 <strong id="displayName"></strong></span>
+            <span class="role-badge" id="roleBadge"></span>
+        </div>
+        <button class="btn-logout" onclick="doLogout()">🚪 Đăng xuất</button>
+    </div>
+    <!-- Auth prompt: shows when not logged in -->
+    <div class="user-bar" id="authBar" style="display:none">
+        <span>Bạn chưa đăng nhập</span>
+        <div class="auth-links">
+            <a href="/pages/login.html" class="btn-auth login">🔐 Đăng nhập</a>
+            <a href="/pages/register.html" class="btn-auth register">📝 Đăng ký</a>
+        </div>
+    </div>
+
     <div class="container">
         <div class="hero">
             <h2>Welcome to BookStore</h2>
             <p>A microservices-based bookstore system built with Django REST Framework</p>
+            <p style="margin-top:8px;font-size:14px;opacity:0.8" id="heroSubtext"></p>
         </div>
-        <h2 style="margin-bottom: 20px;">Services</h2>
-        <div class="services">
-            <a class="service-card" href="/pages/customers.html">
+
+        <div id="permNote" class="permission-note" style="display:none">
+            ⚠️ Một số chức năng yêu cầu quyền cao hơn. Liên hệ Admin để được phân quyền phù hợp.
+        </div>
+
+        <h2 class="section-title">Services</h2>
+        <div class="services" id="serviceGrid">
+            <a class="service-card" href="/pages/customers.html" data-roles="admin,manager,staff,customer">
                 <h3>👤 Customer Service</h3>
                 <p>Manage customers</p>
                 <p class="port">Port: 8001</p>
                 <span class="badge">Open →</span>
             </a>
-            <a class="service-card" href="/pages/staffs.html">
+            <a class="service-card" href="/pages/staffs.html" data-roles="admin,manager,staff">
                 <h3>👨‍💼 Staff Service</h3>
                 <p>Manage staff members</p>
                 <p class="port">Port: 8002</p>
                 <span class="badge">Open →</span>
             </a>
-            <a class="service-card" href="/pages/managers.html">
+            <a class="service-card" href="/pages/managers.html" data-roles="admin,manager">
                 <h3>👔 Manager Service</h3>
                 <p>Manage managers</p>
                 <p class="port">Port: 8003</p>
                 <span class="badge">Open →</span>
             </a>
-            <a class="service-card" href="/pages/catalogs.html">
+            <a class="service-card" href="/pages/catalogs.html" data-roles="admin,manager,staff,customer">
                 <h3>📂 Catalog Service</h3>
                 <p>Manage book catalogs</p>
                 <p class="port">Port: 8004</p>
                 <span class="badge">Open →</span>
             </a>
-            <a class="service-card" href="/pages/books.html">
+            <a class="service-card" href="/pages/books.html" data-roles="admin,manager,staff,customer">
                 <h3>📖 Book Service</h3>
                 <p>Manage books inventory</p>
                 <p class="port">Port: 8005</p>
                 <span class="badge">Open →</span>
             </a>
-            <a class="service-card" href="/pages/cart.html">
+            <a class="service-card" href="/pages/cart.html" data-roles="admin,manager,staff,customer">
                 <h3>🛒 Cart Service</h3>
                 <p>Shopping cart management</p>
                 <p class="port">Port: 8006</p>
                 <span class="badge">Open →</span>
             </a>
-            <a class="service-card" href="/pages/orders.html">
+            <a class="service-card" href="/pages/orders.html" data-roles="admin,manager,staff,customer">
                 <h3>📦 Order Service</h3>
                 <p>Order processing</p>
                 <p class="port">Port: 8007</p>
                 <span class="badge">Open →</span>
             </a>
-            <a class="service-card" href="/pages/payments.html">
+            <a class="service-card" href="/pages/payments.html" data-roles="admin,manager,staff,customer">
                 <h3>💳 Pay Service</h3>
                 <p>Payment processing</p>
                 <p class="port">Port: 8008</p>
                 <span class="badge">Open →</span>
             </a>
-            <a class="service-card" href="/pages/shipments.html">
+            <a class="service-card" href="/pages/shipments.html" data-roles="admin,manager,staff,customer">
                 <h3>🚚 Ship Service</h3>
                 <p>Shipping management</p>
                 <p class="port">Port: 8009</p>
                 <span class="badge">Open →</span>
             </a>
-            <a class="service-card" href="/pages/comments.html">
+            <a class="service-card" href="/pages/comments.html" data-roles="admin,manager,staff,customer">
                 <h3>⭐ Comment & Rate</h3>
                 <p>Reviews and ratings</p>
                 <p class="port">Port: 8010</p>
                 <span class="badge">Open →</span>
             </a>
-            <a class="service-card" href="/pages/recommender.html">
+            <a class="service-card" href="/pages/recommender.html" data-roles="admin,manager,staff,customer">
                 <h3>🤖 Recommender AI</h3>
                 <p>Book recommendations</p>
                 <p class="port">Port: 8011</p>
                 <span class="badge">Open →</span>
             </a>
-            <a class="service-card" href="/api/books/" style="background: #ecf0f1;">
+            <a class="service-card" href="/api/books/" style="background: #ecf0f1;" data-roles="admin,manager,staff,customer">
                 <h3>🌐 API Gateway</h3>
                 <p>Central API routing</p>
                 <p class="port">Port: 8000</p>
@@ -116,5 +156,53 @@
             </a>
         </div>
     </div>
+
+    <script>
+        const token = localStorage.getItem('access_token');
+        const userStr = localStorage.getItem('user');
+        let currentUser = null;
+
+        function doLogout() {
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('refresh_token');
+            localStorage.removeItem('user');
+            window.location.href = '/pages/login.html';
+        }
+
+        function applyRoleUI(role) {
+            const cards = document.querySelectorAll('.service-card[data-roles]');
+            let hasLocked = false;
+            cards.forEach(card => {
+                const allowedRoles = card.getAttribute('data-roles').split(',');
+                if (!allowedRoles.includes(role)) {
+                    card.classList.add('locked');
+                    card.removeAttribute('href');
+                    hasLocked = true;
+                }
+            });
+            if (hasLocked) {
+                document.getElementById('permNote').style.display = 'block';
+            }
+        }
+
+        if (token && userStr) {
+            try {
+                currentUser = JSON.parse(userStr);
+                document.getElementById('userBar').style.display = 'flex';
+                document.getElementById('displayName').textContent = currentUser.full_name || currentUser.username;
+                const badge = document.getElementById('roleBadge');
+                badge.textContent = currentUser.role;
+                badge.classList.add('role-' + currentUser.role);
+                document.getElementById('heroSubtext').textContent =
+                    `Xin chào ${currentUser.full_name || currentUser.username}! Bạn đang đăng nhập với quyền ${currentUser.role.toUpperCase()}.`;
+                applyRoleUI(currentUser.role);
+            } catch(e) {
+                document.getElementById('authBar').style.display = 'flex';
+            }
+        } else {
+            document.getElementById('authBar').style.display = 'flex';
+            document.getElementById('heroSubtext').textContent = 'Vui lòng đăng nhập để sử dụng hệ thống.';
+        }
+    </script>
 </body>
 </html>

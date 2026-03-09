@@ -162,6 +162,19 @@ services:
       - bookstore-net
     restart: on-failure
 
+  auth-service:
+    build: ./auth-service
+    ports:
+      - "8012:8012"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      - DB_HOST=mysql
+    networks:
+      - bookstore-net
+    restart: on-failure
+
   api-gateway:
     build: ./api-gateway
     ports:
@@ -178,6 +191,7 @@ services:
       - ship-service
       - comment-rate-service
       - recommender-ai-service
+      - auth-service
     networks:
       - bookstore-net
     restart: on-failure

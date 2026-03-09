@@ -21,6 +21,8 @@ SERVICE_MAP = {
     'recommend': 'http://recommender-ai-service:8011',
 }
 
+AUTH_SERVICE_URL = 'http://auth-service:8012'
+
 
 def index(request):
     return render(request, 'index.html')
@@ -68,6 +70,57 @@ def comments_page(request):
 
 def recommender_page(request):
     return render(request, 'recommender.html')
+
+
+def login_page(request):
+    return render(request, 'login.html')
+
+
+def register_page(request):
+    return render(request, 'register.html')
+
+
+@api_view(['GET', 'POST', 'PUT', 'PATCH', 'DELETE'])
+def auth_proxy(request, path=''):
+    """Proxy requests to auth-service."""
+    url = f'{AUTH_SERVICE_URL}/auth/{path}'
+    if not url.endswith('/'):
+        url += '/'
+
+    headers = {}
+    auth_header = request.META.get('HTTP_AUTHORIZATION', '')
+    if auth_header:
+        headers['Authorization'] = auth_header
+
+    try:
+        if request.method == 'GET':
+            resp = requests.get(url, params=request.query_params, headers=headers, timeout=10)
+        elif request.method == 'POST':
+            resp = requests.post(url, json=request.data, headers=headers, timeout=10)
+        elif request.method == 'PUT':
+            resp = requests.put(url, json=request.data, headers=headers, timeout=10)
+        elif request.method == 'PATCH':
+            resp = requests.patch(url, json=request.data, headers=headers, timeout=10)
+        elif request.method == 'DELETE':
+            resp = requests.delete(url, headers=headers, timeout=10)
+        else:
+            return Response({'error': 'Method not allowed'}, status=405)
+
+        try:
+            return Response(resp.json(), status=resp.status_code)
+        except ValueError:
+            return Response({'detail': resp.text}, status=resp.status_code)
+
+    except requests.exceptions.ConnectionError:
+        return Response(
+            {'error': 'Cannot connect to auth-service'},
+            status=status.HTTP_503_SERVICE_UNAVAILABLE
+        )
+    except requests.exceptions.Timeout:
+        return Response(
+            {'error': 'Timeout connecting to auth-service'},
+            status=status.HTTP_504_GATEWAY_TIMEOUT
+        )
 
 
 @api_view(['GET', 'POST', 'PUT', 'PATCH', 'DELETE'])

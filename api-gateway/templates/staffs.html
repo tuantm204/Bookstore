@@ -59,6 +59,9 @@
     </div>
 <script>
 const API='/api',SVC='staffs';
+const TOKEN=localStorage.getItem('access_token');
+if(!TOKEN)window.location.href='/pages/login.html';
+const _fetch=window.fetch;window.fetch=(url,opts={})=>{opts.headers={...(opts.headers||{}),'Authorization':'Bearer '+TOKEN};return _fetch(url,opts)};
 function showMsg(t,ok){const e=document.getElementById('msg');e.textContent=t;e.className='msg '+(ok?'ok':'err');setTimeout(()=>e.className='msg',3000)}
 async function load(){
     try{

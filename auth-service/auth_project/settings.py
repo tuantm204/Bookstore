@@ -3,7 +3,7 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-api-gateway-secret-key'
+SECRET_KEY = 'django-insecure-auth-service-jwt-secret-key-bookstore-2024'
 
 DEBUG = True
 
@@ -18,7 +18,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'corsheaders',
-    'gateway',
+    'authentication',
 ]
 
 MIDDLEWARE = [
@@ -29,15 +29,14 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'gateway.middleware.JWTAuthMiddleware',
 ]
 
-ROOT_URLCONF = 'api_gateway.urls'
+ROOT_URLCONF = 'auth_project.urls'
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'],
+        'DIRS': [],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -50,12 +49,16 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'api_gateway.wsgi.application'
+WSGI_APPLICATION = 'auth_project.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'auth_db',
+        'USER': 'root',
+        'PASSWORD': 'Manhtuan04',
+        'HOST': os.environ.get('DB_HOST', 'mysql'),
+        'PORT': '3306',
     }
 }
 
@@ -68,6 +71,12 @@ REST_FRAMEWORK = {
 }
 
 CORS_ALLOW_ALL_ORIGINS = True
+
+# JWT Configuration
+JWT_SECRET = 'bookstore-jwt-secret-key-2024-microservices'
+JWT_ALGORITHM = 'HS256'
+JWT_ACCESS_TOKEN_EXPIRY = 24  # hours
+JWT_REFRESH_TOKEN_EXPIRY = 7  # days
 
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
