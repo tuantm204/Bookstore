@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BookStore - Cart</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background:#f4f6f9;color:#333}
+        .navbar{background:#2c3e50;color:#fff;padding:15px 30px;display:flex;justify-content:space-between;align-items:center}
+        .navbar h1{font-size:24px}.nav-links a{color:#fff;text-decoration:none;margin-left:20px;font-size:16px}
+        .nav-links a:hover{text-decoration:underline}
+        .container{max-width:1100px;margin:30px auto;padding:0 20px}
+        h2{margin-bottom:20px}
+        .card{background:#fff;padding:20px;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.1);margin-bottom:20px}
+        .card h3{margin-bottom:15px}
+        .form-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+        .form-row input,.form-row select{flex:1;padding:10px;border:1px solid #ddd;border-radius:6px;font-size:14px;min-width:120px}
+        .btn{padding:10px 20px;border:none;border-radius:6px;cursor:pointer;font-size:14px;font-weight:bold}
+        .btn-primary{background:#3498db;color:#fff}.btn-primary:hover{background:#2980b9}
+        .btn-success{background:#27ae60;color:#fff}.btn-success:hover{background:#219a52}
+        .btn-danger{background:#e74c3c;color:#fff}.btn-danger:hover{background:#c0392b}
+        .btn-warning{background:#f39c12;color:#fff}.btn-warning:hover{background:#e67e22}
+        .btn-sm{padding:6px 12px;font-size:12px}
+        table{width:100%;border-collapse:collapse;background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.1)}
+        th,td{padding:12px 15px;text-align:left;border-bottom:1px solid #eee}
+        th{background:#2c3e50;color:#fff}tr:hover{background:#f8f9fa}
+        .msg{padding:10px 15px;border-radius:6px;margin-bottom:15px;display:none}
+        .msg.ok{background:#d4edda;color:#155724;display:block}
+        .msg.err{background:#f8d7da;color:#721c24;display:block}
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <h1>📚 BookStore</h1>
+        <div class="nav-links">
+            <a href="/">Home</a>
+            <a href="/pages/books.html">Books</a>
+            <a href="/pages/cart.html">Cart</a>
+            <a href="/pages/customers.html">Customers</a>
+            <a href="/pages/orders.html">Orders</a>
+        </div>
+    </nav>
+    <div class="container">
+        <h2>🛒 Shopping Cart</h2>
+        <div id="msg" class="msg"></div>
+        <div class="card">
+            <h3>View Cart by Customer ID</h3>
+            <div class="form-row">
+                <input type="number" id="custId" placeholder="Customer ID">
+                <button class="btn btn-primary" onclick="loadCart()">Load Cart</button>
+            </div>
+        </div>
+        <div id="cartInfo" style="display:none">
+            <div class="card">
+                <h3>Cart #<span id="cartId"></span> (Customer #<span id="cartCust"></span>)</h3>
+                <button class="btn btn-warning" onclick="placeOrder()">📦 Place Order</button>
+            </div>
+            <table>
+                <thead><tr><th>ID</th><th>Book ID</th><th>Quantity</th><th>Actions</th></tr></thead>
+                <tbody id="tbl"><tr><td colspan="4">No items</td></tr></tbody>
+            </table>
+        </div>
+    </div>
+<script>
+const API='/api';
+let currentCart=null;
+function showMsg(t,ok){const e=document.getElementById('msg');e.textContent=t;e.className='msg '+(ok?'ok':'err');setTimeout(()=>e.className='msg',3000)}
+async function loadCart(){
+    const cid=document.getElementById('custId').value;
+    if(!cid){showMsg('Enter Customer ID',false);return}
+    try{
+        const r=await fetch(API+'/carts/customer/'+cid+'/');const cart=await r.json();
+        if(cart.error||!cart.id){showMsg('Cart not found. Create customer first.',false);return}
+        currentCart=cart;
+        document.getElementById('cartId').textContent=cart.id;
+        document.getElementById('cartCust').textContent=cid;
+        document.getElementById('cartInfo').style.display='block';
+        loadItems(cart.id);
+    }catch(e){showMsg('Error: '+e.message,false)}
+}
+async function loadItems(cartId){
+    try{
+        const r=await fetch(API+'/cart-items/?cart='+cartId);const d=await r.json();
+        const items=Array.isArray(d)?d:(d.results||[]);
+        const tb=document.getElementById('tbl');
+        if(!items.length){tb.innerHTML='<tr><td colspan="4">Cart is empty</td></tr>';return}
+        tb.innerHTML=items.map(i=>`<tr>
+            <td>${i.id}</td><td>${i.book_id}</td><td>${i.quantity}</td>
+            <td><button class="btn btn-danger btn-sm" onclick="delItem(${i.id})">🗑</button></td>
+            </tr>`).join('');
+    }catch(e){showMsg('Error loading items',false)}
+}
+async function delItem(id){
+    await fetch(API+'/cart-items/'+id+'/',{method:'DELETE'});
+    if(currentCart)loadItems(currentCart.id);
+}
+async function placeOrder(){
+    if(!currentCart){showMsg('Load cart first',false);return}
+    const cid=document.getElementById('custId').value;
+    try{
+        const r=await fetch(API+'/orders/',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({customer_id:parseInt(cid)})});
+        const d=await r.json();
+        if(r.ok){showMsg('Order #'+d.id+' placed! Total: $'+d.total_amount,true);loadItems(currentCart.id)}
+        else showMsg(JSON.stringify(d),false);
+    }catch(e){showMsg('Error: '+e.message,false)}
+}
+</script>
+</body>
+</html>

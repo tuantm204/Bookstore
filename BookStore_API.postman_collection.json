@@ -1,0 +1,1262 @@
+{
+	"info": {
+		"_postman_id": "bookstore-micro05-collection",
+		"name": "📚 BookStore Microservices API",
+		"description": "Complete API collection for BookStore Microservices system.\n\nBase URL: http://localhost:8000/api\n\nWorkflow: Customer → Book → Cart → Order → Payment → Shipment → Comment → Recommend",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8000/api"
+		}
+	],
+	"item": [
+		{
+			"name": "👤 1. Customer Service",
+			"item": [
+				{
+					"name": "List Customers",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/customers/",
+							"host": ["{{baseUrl}}"],
+							"path": ["customers", ""]
+						}
+					}
+				},
+				{
+					"name": "Create Customer",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"if (jsonData.id) {",
+									"    pm.collectionVariables.set('customerId', jsonData.id);",
+									"    console.log('Saved customerId:', jsonData.id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Nguyen Van A\",\n    \"email\": \"nguyenvana@gmail.com\",\n    \"phone\": \"0901234567\",\n    \"address\": \"123 Le Loi, Ha Noi\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/customers/",
+							"host": ["{{baseUrl}}"],
+							"path": ["customers", ""]
+						}
+					}
+				},
+				{
+					"name": "Get Customer Detail",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/customers/{{customerId}}/",
+							"host": ["{{baseUrl}}"],
+							"path": ["customers", "{{customerId}}", ""]
+						}
+					}
+				},
+				{
+					"name": "Update Customer (PUT)",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Nguyen Van B\",\n    \"email\": \"nguyenvanb@gmail.com\",\n    \"phone\": \"0909999999\",\n    \"address\": \"456 Nguyen Hue, HCM\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/customers/{{customerId}}/",
+							"host": ["{{baseUrl}}"],
+							"path": ["customers", "{{customerId}}", ""]
+						}
+					}
+				},
+				{
+					"name": "Patch Customer",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"phone\": \"0908888888\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/customers/{{customerId}}/",
+							"host": ["{{baseUrl}}"],
+							"path": ["customers", "{{customerId}}", ""]
+						}
+					}
+				},
+				{
+					"name": "Delete Customer",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/customers/{{customerId}}/",
+							"host": ["{{baseUrl}}"],
+							"path": ["customers", "{{customerId}}", ""]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "👨‍💼 2. Staff Service",
+			"item": [
+				{
+					"name": "List Staff",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/staffs/",
+							"host": ["{{baseUrl}}"],
+							"path": ["staffs", ""]
+						}
+					}
+				},
+				{
+					"name": "Create Staff",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"if (jsonData.id) pm.collectionVariables.set('staffId', jsonData.id);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Tran Thi B\",\n    \"email\": \"staff_b@bookstore.com\",\n    \"role\": \"cashier\",\n    \"phone\": \"0912345678\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/staffs/",
+							"host": ["{{baseUrl}}"],
+							"path": ["staffs", ""]
+						}
+					}
+				},
+				{
+					"name": "Get Staff Detail",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/staffs/{{staffId}}/",
+							"host": ["{{baseUrl}}"],
+							"path": ["staffs", "{{staffId}}", ""]
+						}
+					}
+				},
+				{
+					"name": "Delete Staff",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/staffs/{{staffId}}/",
+							"host": ["{{baseUrl}}"],
+							"path": ["staffs", "{{staffId}}", ""]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "👔 3. Manager Service",
+			"item": [
+				{
+					"name": "List Managers",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/managers/",
+							"host": ["{{baseUrl}}"],
+							"path": ["managers", ""]
+						}
+					}
+				},
+				{
+					"name": "Create Manager",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"if (jsonData.id) pm.collectionVariables.set('managerId', jsonData.id);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Le Van C\",\n    \"email\": \"manager_c@bookstore.com\",\n    \"department\": \"Sales\",\n    \"phone\": \"0923456789\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/managers/",
+							"host": ["{{baseUrl}}"],
+							"path": ["managers", ""]
+						}
+					}
+				},
+				{
+					"name": "Get Manager Detail",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/managers/{{managerId}}/",
+							"host": ["{{baseUrl}}"],
+							"path": ["managers", "{{managerId}}", ""]
+						}
+					}
+				},
+				{
+					"name": "Delete Manager",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/managers/{{managerId}}/",
+							"host": ["{{baseUrl}}"],
+							"path": ["managers", "{{managerId}}", ""]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "📂 4. Catalog Service",
+			"item": [
+				{
+					"name": "List Catalogs",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/catalogs/",
+							"host": ["{{baseUrl}}"],
+							"path": ["catalogs", ""]
+						}
+					}
+				},
+				{
+					"name": "Create Catalog",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"if (jsonData.id) pm.collectionVariables.set('catalogId', jsonData.id);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Fiction\",\n    \"description\": \"Sách tiểu thuyết, truyện hư cấu\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/catalogs/",
+							"host": ["{{baseUrl}}"],
+							"path": ["catalogs", ""]
+						}
+					}
+				},
+				{
+					"name": "Delete Catalog",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/catalogs/{{catalogId}}/",
+							"host": ["{{baseUrl}}"],
+							"path": ["catalogs", "{{catalogId}}", ""]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "📖 5. Book Service",
+			"item": [
+				{
+					"name": "List Books",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/books/",
+							"host": ["{{baseUrl}}"],
+							"path": ["books", ""]
+						}
+					}
+				},
+				{
+					"name": "Create Book - Dune",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"if (jsonData.id) pm.collectionVariables.set('bookId', jsonData.id);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Dune\",\n    \"author\": \"Frank Herbert\",\n    \"price\": \"15.99\",\n    \"stock\": 50\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/books/",
+							"host": ["{{baseUrl}}"],
+							"path": ["books", ""]
+						}
+					}
+				},
+				{
+					"name": "Create Book - 1984",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"if (jsonData.id) pm.collectionVariables.set('bookId2', jsonData.id);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"1984\",\n    \"author\": \"George Orwell\",\n    \"price\": \"12.50\",\n    \"stock\": 30\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/books/",
+							"host": ["{{baseUrl}}"],
+							"path": ["books", ""]
+						}
+					}
+				},
+				{
+					"name": "Create Book - Harry Potter",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Harry Potter and the Sorcerer's Stone\",\n    \"author\": \"J.K. Rowling\",\n    \"price\": \"19.99\",\n    \"stock\": 100\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/books/",
+							"host": ["{{baseUrl}}"],
+							"path": ["books", ""]
+						}
+					}
+				},
+				{
+					"name": "Get Book Detail",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/books/{{bookId}}/",
+							"host": ["{{baseUrl}}"],
+							"path": ["books", "{{bookId}}", ""]
+						}
+					}
+				},
+				{
+					"name": "Update Book Stock (PATCH)",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"stock\": 999\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/books/{{bookId}}/",
+							"host": ["{{baseUrl}}"],
+							"path": ["books", "{{bookId}}", ""]
+						}
+					}
+				},
+				{
+					"name": "Delete Book",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/books/{{bookId}}/",
+							"host": ["{{baseUrl}}"],
+							"path": ["books", "{{bookId}}", ""]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "🛒 6. Cart Service",
+			"item": [
+				{
+					"name": "List Carts",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/carts/",
+							"host": ["{{baseUrl}}"],
+							"path": ["carts", ""]
+						}
+					}
+				},
+				{
+					"name": "Get Cart by Customer ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/carts/customer/{{customerId}}/",
+							"host": ["{{baseUrl}}"],
+							"path": ["carts", "customer", "{{customerId}}", ""]
+						}
+					}
+				},
+				{
+					"name": "Add Item to Cart",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"if (jsonData.id) pm.collectionVariables.set('cartItemId', jsonData.id);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"cart\": 1,\n    \"book_id\": 1,\n    \"quantity\": 2\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/cart-items/",
+							"host": ["{{baseUrl}}"],
+							"path": ["cart-items", ""]
+						}
+					}
+				},
+				{
+					"name": "Add 2nd Item to Cart",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"cart\": 1,\n    \"book_id\": 2,\n    \"quantity\": 1\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/cart-items/",
+							"host": ["{{baseUrl}}"],
+							"path": ["cart-items", ""]
+						}
+					}
+				},
+				{
+					"name": "List Cart Items",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/cart-items/",
+							"host": ["{{baseUrl}}"],
+							"path": ["cart-items", ""]
+						}
+					}
+				},
+				{
+					"name": "Delete Cart Item",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/cart-items/{{cartItemId}}/",
+							"host": ["{{baseUrl}}"],
+							"path": ["cart-items", "{{cartItemId}}", ""]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "📦 7. Order Service",
+			"item": [
+				{
+					"name": "List Orders",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/orders/",
+							"host": ["{{baseUrl}}"],
+							"path": ["orders", ""]
+						}
+					}
+				},
+				{
+					"name": "⭐ Create Order (from Cart)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"if (jsonData.id) pm.collectionVariables.set('orderId', jsonData.id);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"customer_id\": 1,\n    \"address\": \"123 Nguyen Hue, Quan 1, HCM\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/orders/",
+							"host": ["{{baseUrl}}"],
+							"path": ["orders", ""]
+						}
+					}
+				},
+				{
+					"name": "Get Order Detail",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/orders/{{orderId}}/",
+							"host": ["{{baseUrl}}"],
+							"path": ["orders", "{{orderId}}", ""]
+						}
+					}
+				},
+				{
+					"name": "Update Order Status",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"status\": \"paid\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/orders/{{orderId}}/",
+							"host": ["{{baseUrl}}"],
+							"path": ["orders", "{{orderId}}", ""]
+						}
+					}
+				},
+				{
+					"name": "List Order Items",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/order-items/",
+							"host": ["{{baseUrl}}"],
+							"path": ["order-items", ""]
+						}
+					}
+				},
+				{
+					"name": "Delete Order",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/orders/{{orderId}}/",
+							"host": ["{{baseUrl}}"],
+							"path": ["orders", "{{orderId}}", ""]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "💳 8. Payment Service",
+			"item": [
+				{
+					"name": "List Payments",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/payments/",
+							"host": ["{{baseUrl}}"],
+							"path": ["payments", ""]
+						}
+					}
+				},
+				{
+					"name": "Create Payment",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"if (jsonData.id) pm.collectionVariables.set('paymentId', jsonData.id);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"order_id\": 1,\n    \"amount\": \"44.48\",\n    \"method\": \"credit_card\",\n    \"status\": \"pending\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/payments/",
+							"host": ["{{baseUrl}}"],
+							"path": ["payments", ""]
+						}
+					}
+				},
+				{
+					"name": "Mark Payment Completed",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"status\": \"completed\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/payments/{{paymentId}}/",
+							"host": ["{{baseUrl}}"],
+							"path": ["payments", "{{paymentId}}", ""]
+						}
+					}
+				},
+				{
+					"name": "Delete Payment",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/payments/{{paymentId}}/",
+							"host": ["{{baseUrl}}"],
+							"path": ["payments", "{{paymentId}}", ""]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "🚚 9. Shipment Service",
+			"item": [
+				{
+					"name": "List Shipments",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/shipments/",
+							"host": ["{{baseUrl}}"],
+							"path": ["shipments", ""]
+						}
+					}
+				},
+				{
+					"name": "Create Shipment",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"if (jsonData.id) pm.collectionVariables.set('shipmentId', jsonData.id);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"order_id\": 1,\n    \"address\": \"123 Nguyen Hue, Quan 1, HCM\",\n    \"tracking_number\": \"VN123456789\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/shipments/",
+							"host": ["{{baseUrl}}"],
+							"path": ["shipments", ""]
+						}
+					}
+				},
+				{
+					"name": "Update Shipment - Shipped",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"status\": \"shipped\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/shipments/{{shipmentId}}/",
+							"host": ["{{baseUrl}}"],
+							"path": ["shipments", "{{shipmentId}}", ""]
+						}
+					}
+				},
+				{
+					"name": "Update Shipment - Delivered",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"status\": \"delivered\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/shipments/{{shipmentId}}/",
+							"host": ["{{baseUrl}}"],
+							"path": ["shipments", "{{shipmentId}}", ""]
+						}
+					}
+				},
+				{
+					"name": "Delete Shipment",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/shipments/{{shipmentId}}/",
+							"host": ["{{baseUrl}}"],
+							"path": ["shipments", "{{shipmentId}}", ""]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "⭐ 10. Comment & Rate Service",
+			"item": [
+				{
+					"name": "List Comments",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/comments/",
+							"host": ["{{baseUrl}}"],
+							"path": ["comments", ""]
+						}
+					}
+				},
+				{
+					"name": "Create Comment - 5 stars",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"if (jsonData.id) pm.collectionVariables.set('commentId', jsonData.id);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"customer_id\": 1,\n    \"book_id\": 1,\n    \"content\": \"Sách rất hay, nội dung hấp dẫn! Đáng đọc.\",\n    \"rating\": 5\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/comments/",
+							"host": ["{{baseUrl}}"],
+							"path": ["comments", ""]
+						}
+					}
+				},
+				{
+					"name": "Create Comment - 3 stars",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"customer_id\": 1,\n    \"book_id\": 2,\n    \"content\": \"Sách ổn, nhưng hơi khó đọc.\",\n    \"rating\": 3\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/comments/",
+							"host": ["{{baseUrl}}"],
+							"path": ["comments", ""]
+						}
+					}
+				},
+				{
+					"name": "Delete Comment",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/comments/{{commentId}}/",
+							"host": ["{{baseUrl}}"],
+							"path": ["comments", "{{commentId}}", ""]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "🤖 11. Recommender AI Service",
+			"item": [
+				{
+					"name": "⭐ Get AI Recommendations",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/recommend/",
+							"host": ["{{baseUrl}}"],
+							"path": ["recommend", ""]
+						}
+					}
+				},
+				{
+					"name": "List Saved Recommendations",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/recommendations/",
+							"host": ["{{baseUrl}}"],
+							"path": ["recommendations", ""]
+						}
+					}
+				},
+				{
+					"name": "Save Recommendation",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"if (jsonData.id) pm.collectionVariables.set('recoId', jsonData.id);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"customer_id\": 1,\n    \"book_id\": 1,\n    \"score\": 0.95\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/recommendations/",
+							"host": ["{{baseUrl}}"],
+							"path": ["recommendations", ""]
+						}
+					}
+				},
+				{
+					"name": "Delete Recommendation",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/recommendations/{{recoId}}/",
+							"host": ["{{baseUrl}}"],
+							"path": ["recommendations", "{{recoId}}", ""]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "🔥 FULL WORKFLOW TEST",
+			"description": "Chạy lần lượt từ trên xuống để test toàn bộ business flow",
+			"item": [
+				{
+					"name": "Step 1 - Create Customer",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Customer created', function() {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"var jsonData = pm.response.json();",
+									"pm.collectionVariables.set('wfCustomerId', jsonData.id);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Test User\",\n    \"email\": \"testuser_{{$timestamp}}@test.com\",\n    \"phone\": \"0900000001\",\n    \"address\": \"Test Address, HCM\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/customers/",
+							"host": ["{{baseUrl}}"],
+							"path": ["customers", ""]
+						}
+					}
+				},
+				{
+					"name": "Step 2 - Create Book A",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Book created', function() {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"var jsonData = pm.response.json();",
+									"pm.collectionVariables.set('wfBookId', jsonData.id);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Test Book A\",\n    \"author\": \"Author A\",\n    \"price\": \"25.00\",\n    \"stock\": 10\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/books/",
+							"host": ["{{baseUrl}}"],
+							"path": ["books", ""]
+						}
+					}
+				},
+				{
+					"name": "Step 3 - Get Customer Cart",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Cart found', function() {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"var jsonData = pm.response.json();",
+									"pm.collectionVariables.set('wfCartId', jsonData.id);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/carts/customer/{{wfCustomerId}}/",
+							"host": ["{{baseUrl}}"],
+							"path": ["carts", "customer", "{{wfCustomerId}}", ""]
+						}
+					}
+				},
+				{
+					"name": "Step 4 - Add Book to Cart",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Item added to cart', function() {",
+									"    pm.response.to.have.status(201);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"cart\": {{wfCartId}},\n    \"book_id\": {{wfBookId}},\n    \"quantity\": 3\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/cart-items/",
+							"host": ["{{baseUrl}}"],
+							"path": ["cart-items", ""]
+						}
+					}
+				},
+				{
+					"name": "Step 5 - Place Order",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Order created', function() {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"var jsonData = pm.response.json();",
+									"pm.collectionVariables.set('wfOrderId', jsonData.id);",
+									"console.log('Order total:', jsonData.total_amount);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"customer_id\": {{wfCustomerId}},\n    \"address\": \"789 Le Lai, Quan 1, HCM\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/orders/",
+							"host": ["{{baseUrl}}"],
+							"path": ["orders", ""]
+						}
+					}
+				},
+				{
+					"name": "Step 6 - Check Payment (auto-created)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Payments exist', function() {",
+									"    pm.response.to.have.status(200);",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.length).to.be.above(0);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/payments/",
+							"host": ["{{baseUrl}}"],
+							"path": ["payments", ""]
+						}
+					}
+				},
+				{
+					"name": "Step 7 - Check Shipment (auto-created)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Shipments exist', function() {",
+									"    pm.response.to.have.status(200);",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.length).to.be.above(0);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/shipments/",
+							"host": ["{{baseUrl}}"],
+							"path": ["shipments", ""]
+						}
+					}
+				},
+				{
+					"name": "Step 8 - Add Comment & Rating",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Comment created', function() {",
+									"    pm.response.to.have.status(201);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"customer_id\": {{wfCustomerId}},\n    \"book_id\": {{wfBookId}},\n    \"content\": \"Excellent book! Highly recommended.\",\n    \"rating\": 5\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/comments/",
+							"host": ["{{baseUrl}}"],
+							"path": ["comments", ""]
+						}
+					}
+				},
+				{
+					"name": "Step 9 - Get AI Recommendations",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Recommendations returned', function() {",
+									"    pm.response.to.have.status(200);",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.recommended_books).to.be.an('array');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/recommend/",
+							"host": ["{{baseUrl}}"],
+							"path": ["recommend", ""]
+						}
+					}
+				}
+			]
+		}
+	]
+}

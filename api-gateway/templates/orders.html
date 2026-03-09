@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BookStore - Orders</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background:#f4f6f9;color:#333}
+        .navbar{background:#2c3e50;color:#fff;padding:15px 30px;display:flex;justify-content:space-between;align-items:center}
+        .navbar h1{font-size:24px}.nav-links a{color:#fff;text-decoration:none;margin-left:20px;font-size:16px}
+        .nav-links a:hover{text-decoration:underline}
+        .container{max-width:1100px;margin:30px auto;padding:0 20px}
+        h2{margin-bottom:20px}
+        .card{background:#fff;padding:20px;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.1);margin-bottom:20px}
+        .card h3{margin-bottom:15px}
+        .form-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+        .form-row input,.form-row select{flex:1;padding:10px;border:1px solid #ddd;border-radius:6px;font-size:14px;min-width:120px}
+        .btn{padding:10px 20px;border:none;border-radius:6px;cursor:pointer;font-size:14px;font-weight:bold}
+        .btn-primary{background:#3498db;color:#fff}.btn-primary:hover{background:#2980b9}
+        .btn-danger{background:#e74c3c;color:#fff}.btn-danger:hover{background:#c0392b}
+        .btn-sm{padding:6px 12px;font-size:12px}
+        .badge{display:inline-block;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:bold;color:#fff}
+        .badge-pending{background:#f39c12}.badge-paid{background:#27ae60}.badge-shipped{background:#3498db}
+        .badge-delivered{background:#2ecc71}.badge-cancelled{background:#e74c3c}
+        table{width:100%;border-collapse:collapse;background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.1)}
+        th,td{padding:12px 15px;text-align:left;border-bottom:1px solid #eee}
+        th{background:#2c3e50;color:#fff}tr:hover{background:#f8f9fa}
+        .msg{padding:10px 15px;border-radius:6px;margin-bottom:15px;display:none}
+        .msg.ok{background:#d4edda;color:#155724;display:block}
+        .msg.err{background:#f8d7da;color:#721c24;display:block}
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <h1>📚 BookStore</h1>
+        <div class="nav-links">
+            <a href="/">Home</a>
+            <a href="/pages/books.html">Books</a>
+            <a href="/pages/cart.html">Cart</a>
+            <a href="/pages/customers.html">Customers</a>
+            <a href="/pages/orders.html">Orders</a>
+        </div>
+    </nav>
+    <div class="container">
+        <h2>📦 Orders Management</h2>
+        <div id="msg" class="msg"></div>
+        <div class="card">
+            <h3>Create Order from Cart</h3>
+            <div class="form-row">
+                <input type="number" id="customer_id" placeholder="Customer ID">
+                <button class="btn btn-primary" onclick="createOrder()">Place Order</button>
+            </div>
+            <p style="margin-top:8px;color:#666;font-size:13px">This will create an order from the customer's cart items, auto-create payment and shipment.</p>
+        </div>
+        <table>
+            <thead><tr><th>ID</th><th>Customer</th><th>Total</th><th>Status</th><th>Created</th><th>Actions</th></tr></thead>
+            <tbody id="tbl"><tr><td colspan="6">Loading...</td></tr></tbody>
+        </table>
+    </div>
+<script>
+const API='/api',SVC='orders';
+function showMsg(t,ok){const e=document.getElementById('msg');e.textContent=t;e.className='msg '+(ok?'ok':'err');setTimeout(()=>e.className='msg',3000)}
+async function load(){
+    try{
+        const r=await fetch(API+'/'+SVC+'/');const d=await r.json();
+        const items=Array.isArray(d)?d:(d.results||[]);
+        const tb=document.getElementById('tbl');
+        if(!items.length){tb.innerHTML='<tr><td colspan="6">No orders yet</td></tr>';return}
+        tb.innerHTML=items.map(o=>`<tr>
+            <td>${o.id}</td><td>${o.customer_id}</td>
+            <td>$${parseFloat(o.total_amount).toFixed(2)}</td>
+            <td><span class="badge badge-${o.status}">${o.status}</span></td>
+            <td>${new Date(o.created_at).toLocaleDateString()}</td>
+            <td><button class="btn btn-danger btn-sm" onclick="del(${o.id})">🗑</button></td>
+            </tr>`).join('');
+    }catch(e){document.getElementById('tbl').innerHTML='<tr><td colspan="6">Error loading</td></tr>'}
+}
+async function createOrder(){
+    const cid=document.getElementById('customer_id').value;
+    if(!cid){showMsg('Enter Customer ID',false);return}
+    const r=await fetch(API+'/'+SVC+'/',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({customer_id:parseInt(cid)})});
+    const d=await r.json();
+    if(r.ok){showMsg('Order #'+d.id+' created! Total: $'+d.total_amount,true);document.getElementById('customer_id').value='';load()}
+    else showMsg(JSON.stringify(d),false);
+}
+async function del(id){if(!confirm('Delete order #'+id+'?'))return;await fetch(API+'/'+SVC+'/'+id+'/',{method:'DELETE'});load()}
+load();
+</script>
+</body>
+</html>

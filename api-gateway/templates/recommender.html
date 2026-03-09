@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BookStore - Recommender AI</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background:#f4f6f9;color:#333}
+        .navbar{background:#2c3e50;color:#fff;padding:15px 30px;display:flex;justify-content:space-between;align-items:center}
+        .navbar h1{font-size:24px}.nav-links a{color:#fff;text-decoration:none;margin-left:20px;font-size:16px}
+        .nav-links a:hover{text-decoration:underline}
+        .container{max-width:1100px;margin:30px auto;padding:0 20px}
+        h2{margin-bottom:20px}
+        .card{background:#fff;padding:20px;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.1);margin-bottom:20px}
+        .card h3{margin-bottom:15px}
+        .form-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+        .form-row input,.form-row select{flex:1;padding:10px;border:1px solid #ddd;border-radius:6px;font-size:14px;min-width:120px}
+        .btn{padding:10px 20px;border:none;border-radius:6px;cursor:pointer;font-size:14px;font-weight:bold}
+        .btn-primary{background:#3498db;color:#fff}.btn-primary:hover{background:#2980b9}
+        .btn-success{background:#27ae60;color:#fff}.btn-success:hover{background:#219a52}
+        .btn-danger{background:#e74c3c;color:#fff}.btn-danger:hover{background:#c0392b}
+        .btn-sm{padding:6px 12px;font-size:12px}
+        .reco-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:15px;margin-top:20px}
+        .reco-card{background:#fff;padding:20px;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.1);text-align:center}
+        .reco-card h4{margin-bottom:8px;color:#2c3e50}.reco-card p{color:#666;font-size:14px}
+        .reco-card .price{color:#27ae60;font-size:18px;font-weight:bold;margin-top:8px}
+        table{width:100%;border-collapse:collapse;background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.1)}
+        th,td{padding:12px 15px;text-align:left;border-bottom:1px solid #eee}
+        th{background:#2c3e50;color:#fff}tr:hover{background:#f8f9fa}
+        .msg{padding:10px 15px;border-radius:6px;margin-bottom:15px;display:none}
+        .msg.ok{background:#d4edda;color:#155724;display:block}
+        .msg.err{background:#f8d7da;color:#721c24;display:block}
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <h1>📚 BookStore</h1>
+        <div class="nav-links">
+            <a href="/">Home</a>
+            <a href="/pages/books.html">Books</a>
+            <a href="/pages/cart.html">Cart</a>
+            <a href="/pages/customers.html">Customers</a>
+            <a href="/pages/orders.html">Orders</a>
+        </div>
+    </nav>
+    <div class="container">
+        <h2>🤖 Recommender AI</h2>
+        <div id="msg" class="msg"></div>
+
+        <div class="card">
+            <h3>Get Book Recommendations</h3>
+            <p style="color:#666;margin-bottom:15px">AI-powered random book recommendations from our catalog</p>
+            <button class="btn btn-success" onclick="getRecommendations()">🎲 Get Recommendations</button>
+        </div>
+        <div id="recoArea" class="reco-grid"></div>
+
+        <h2 style="margin-top:30px">📋 Saved Recommendations</h2>
+        <div class="card" style="margin-top:15px">
+            <h3>Save Recommendation</h3>
+            <div class="form-row">
+                <input type="number" id="customer_id" placeholder="Customer ID">
+                <input type="number" id="book_id" placeholder="Book ID">
+                <input type="number" id="score" placeholder="Score (0.0 - 1.0)" step="0.1" min="0" max="1">
+            </div>
+            <button class="btn btn-primary" onclick="addItem()">Save Recommendation</button>
+        </div>
+        <table>
+            <thead><tr><th>ID</th><th>Customer</th><th>Book</th><th>Score</th><th>Created</th><th>Actions</th></tr></thead>
+            <tbody id="tbl"><tr><td colspan="6">Loading...</td></tr></tbody>
+        </table>
+    </div>
+<script>
+const API='/api';
+function showMsg(t,ok){const e=document.getElementById('msg');e.textContent=t;e.className='msg '+(ok?'ok':'err');setTimeout(()=>e.className='msg',3000)}
+async function getRecommendations(){
+    try{
+        const r=await fetch(API+'/recommend/');const d=await r.json();
+        const books=d.recommended_books||[];
+        const area=document.getElementById('recoArea');
+        if(!books.length){area.innerHTML='<p>No books in catalog yet. Add some books first!</p>';return}
+        area.innerHTML=books.map(b=>`<div class="reco-card">
+            <h4>📖 ${b.title}</h4>
+            <p>by ${b.author}</p>
+            <p class="price">$${parseFloat(b.price).toFixed(2)}</p>
+            <p style="color:#999;font-size:12px;margin-top:5px">Stock: ${b.stock}</p>
+        </div>`).join('');
+    }catch(e){showMsg('Error getting recommendations: '+e.message,false)}
+}
+async function load(){
+    try{
+        const r=await fetch(API+'/recommendations/');const d=await r.json();
+        const items=Array.isArray(d)?d:(d.results||[]);
+        const tb=document.getElementById('tbl');
+        if(!items.length){tb.innerHTML='<tr><td colspan="6">No saved recommendations yet</td></tr>';return}
+        tb.innerHTML=items.map(rc=>`<tr>
+            <td>${rc.id}</td><td>#${rc.customer_id}</td><td>#${rc.book_id}</td>
+            <td>${rc.score.toFixed(2)}</td>
+            <td>${new Date(rc.created_at).toLocaleDateString()}</td>
+            <td><button class="btn btn-danger btn-sm" onclick="del(${rc.id})">🗑</button></td>
+            </tr>`).join('');
+    }catch(e){document.getElementById('tbl').innerHTML='<tr><td colspan="6">Error loading</td></tr>'}
+}
+async function addItem(){
+    const data={customer_id:document.getElementById('customer_id').value,book_id:document.getElementById('book_id').value,score:parseFloat(document.getElementById('score').value)||0};
+    if(!data.customer_id||!data.book_id){showMsg('Customer ID and Book ID required',false);return}
+    const r=await fetch(API+'/recommendations/',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+    if(r.ok){showMsg('Recommendation saved!',true);['customer_id','book_id','score'].forEach(id=>document.getElementById(id).value='');load()}
+    else{const e=await r.json();showMsg(JSON.stringify(e),false)}
+}
+async function del(id){if(!confirm('Delete recommendation #'+id+'?'))return;await fetch(API+'/recommendations/'+id+'/',{method:'DELETE'});load()}
+load();
+</script>
+</body>
+</html>

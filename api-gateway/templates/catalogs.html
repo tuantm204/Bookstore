@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BookStore - Catalogs</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background:#f4f6f9;color:#333}
+        .navbar{background:#2c3e50;color:#fff;padding:15px 30px;display:flex;justify-content:space-between;align-items:center}
+        .navbar h1{font-size:24px}.nav-links a{color:#fff;text-decoration:none;margin-left:20px;font-size:16px}
+        .nav-links a:hover{text-decoration:underline}
+        .container{max-width:1100px;margin:30px auto;padding:0 20px}
+        h2{margin-bottom:20px}
+        .card{background:#fff;padding:20px;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.1);margin-bottom:20px}
+        .card h3{margin-bottom:15px}
+        .form-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+        .form-row input,.form-row select,.form-row textarea{flex:1;padding:10px;border:1px solid #ddd;border-radius:6px;font-size:14px;min-width:120px}
+        .btn{padding:10px 20px;border:none;border-radius:6px;cursor:pointer;font-size:14px;font-weight:bold}
+        .btn-primary{background:#3498db;color:#fff}.btn-primary:hover{background:#2980b9}
+        .btn-danger{background:#e74c3c;color:#fff}.btn-danger:hover{background:#c0392b}
+        .btn-sm{padding:6px 12px;font-size:12px}
+        table{width:100%;border-collapse:collapse;background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.1)}
+        th,td{padding:12px 15px;text-align:left;border-bottom:1px solid #eee}
+        th{background:#2c3e50;color:#fff}tr:hover{background:#f8f9fa}
+        .msg{padding:10px 15px;border-radius:6px;margin-bottom:15px;display:none}
+        .msg.ok{background:#d4edda;color:#155724;display:block}
+        .msg.err{background:#f8d7da;color:#721c24;display:block}
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <h1>📚 BookStore</h1>
+        <div class="nav-links">
+            <a href="/">Home</a>
+            <a href="/pages/books.html">Books</a>
+            <a href="/pages/cart.html">Cart</a>
+            <a href="/pages/customers.html">Customers</a>
+            <a href="/pages/orders.html">Orders</a>
+        </div>
+    </nav>
+    <div class="container">
+        <h2>📂 Catalogs Management</h2>
+        <div id="msg" class="msg"></div>
+        <div class="card">
+            <h3>Add New Catalog</h3>
+            <div class="form-row">
+                <input type="text" id="name" placeholder="Catalog Name">
+                <input type="text" id="description" placeholder="Description">
+            </div>
+            <button class="btn btn-primary" onclick="addItem()">Add Catalog</button>
+        </div>
+        <table>
+            <thead><tr><th>ID</th><th>Name</th><th>Description</th><th>Created</th><th>Actions</th></tr></thead>
+            <tbody id="tbl"><tr><td colspan="5">Loading...</td></tr></tbody>
+        </table>
+    </div>
+<script>
+const API='/api',SVC='catalogs';
+function showMsg(t,ok){const e=document.getElementById('msg');e.textContent=t;e.className='msg '+(ok?'ok':'err');setTimeout(()=>e.className='msg',3000)}
+async function load(){
+    try{
+        const r=await fetch(API+'/'+SVC+'/');const d=await r.json();
+        const items=Array.isArray(d)?d:(d.results||[]);
+        const tb=document.getElementById('tbl');
+        if(!items.length){tb.innerHTML='<tr><td colspan="5">No catalogs yet</td></tr>';return}
+        tb.innerHTML=items.map(c=>`<tr>
+            <td>${c.id}</td><td>${c.name}</td><td>${c.description||'-'}</td>
+            <td>${new Date(c.created_at).toLocaleDateString()}</td>
+            <td><button class="btn btn-danger btn-sm" onclick="del(${c.id})">🗑</button></td>
+            </tr>`).join('');
+    }catch(e){document.getElementById('tbl').innerHTML='<tr><td colspan="5">Error loading</td></tr>'}
+}
+async function addItem(){
+    const data={name:document.getElementById('name').value,description:document.getElementById('description').value};
+    if(!data.name){showMsg('Catalog name required',false);return}
+    const r=await fetch(API+'/'+SVC+'/',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+    if(r.ok){showMsg('Catalog added!',true);['name','description'].forEach(id=>document.getElementById(id).value='');load()}
+    else{const e=await r.json();showMsg(JSON.stringify(e),false)}
+}
+async function del(id){if(!confirm('Delete catalog #'+id+'?'))return;await fetch(API+'/'+SVC+'/'+id+'/',{method:'DELETE'});load()}
+load();
+</script>
+</body>
+</html>
