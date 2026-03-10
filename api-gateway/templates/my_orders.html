@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Đơn hàng của tôi - BookStore</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:#f8fafc;color:#1e293b}
+a{text-decoration:none;color:inherit}
+header{background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.08);position:sticky;top:0;z-index:100}
+.header-wrap{max-width:1280px;margin:0 auto;padding:12px 24px;display:flex;align-items:center;gap:24px}
+.logo{font-size:24px;font-weight:800;color:#2563eb}.logo i{margin-right:6px}
+.header-actions{display:flex;align-items:center;gap:16px;margin-left:auto}
+.header-actions a{color:#64748b;font-size:14px;display:flex;align-items:center;gap:6px}
+.header-actions a:hover{color:#2563eb}
+.breadcrumb{max-width:1280px;margin:0 auto;padding:16px 24px;font-size:13px;color:#94a3b8}
+.breadcrumb a{color:#64748b}.breadcrumb a:hover{color:#2563eb}
+
+.page-wrap{max-width:1280px;margin:0 auto;padding:0 24px 48px}
+.page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
+.page-header h1{font-size:24px;font-weight:700}
+.status-tabs{display:flex;gap:8px;flex-wrap:wrap}
+.status-tab{padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:1px solid #e2e8f0;background:#fff;font-family:inherit;transition:all .2s}
+.status-tab:hover,.status-tab.active{background:#2563eb;color:#fff;border-color:#2563eb}
+
+.order-card{background:#fff;border-radius:12px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.06);overflow:hidden}
+.order-header{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;background:#f8fafc;border-bottom:1px solid #f1f5f9;flex-wrap:wrap;gap:8px}
+.order-id{font-weight:700;font-size:15px}
+.order-date{font-size:13px;color:#64748b}
+.order-status{padding:4px 12px;border-radius:6px;font-size:12px;font-weight:700;text-transform:uppercase}
+.status-pending{background:#fef9c3;color:#854d0e}
+.status-paid{background:#dbeafe;color:#1e40af}
+.status-shipped{background:#f3e8ff;color:#6b21a8}
+.status-delivered{background:#dcfce7;color:#166534}
+.status-cancelled{background:#fee2e2;color:#991b1b}
+.order-body{padding:20px}
+.order-items{margin-bottom:16px}
+.order-item{display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid #f8fafc}
+.order-item:last-child{border-bottom:none}
+.oi-icon{width:44px;height:44px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px}
+.oi-info{flex:1}
+.oi-info h5{font-size:14px;font-weight:600}
+.oi-info span{font-size:12px;color:#64748b}
+.oi-price{font-weight:700;color:#dc2626;font-size:14px}
+.order-footer{display:flex;justify-content:space-between;align-items:center;padding-top:16px;border-top:1px solid #f1f5f9;flex-wrap:wrap;gap:12px}
+.order-total{font-size:18px;font-weight:700}
+.order-actions{display:flex;gap:8px}
+.order-actions button{padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;border:1px solid #e2e8f0;background:#fff;transition:all .2s}
+.order-actions button:hover{background:#f8fafc}
+.btn-track{border-color:#2563eb!important;color:#2563eb}.btn-track:hover{background:#eff6ff!important}
+
+/* Tracking modal */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:center;justify-content:center}
+.modal-overlay.show{display:flex}
+.modal{background:#fff;border-radius:16px;padding:32px;max-width:500px;width:90%;max-height:80vh;overflow-y:auto}
+.modal h2{font-size:20px;font-weight:700;margin-bottom:20px}
+.track-step{display:flex;gap:16px;padding:16px 0;position:relative}
+.track-step::before{content:'';position:absolute;left:17px;top:50px;bottom:-16px;width:2px;background:#e2e8f0}
+.track-step:last-child::before{display:none}
+.track-dot{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px;z-index:1}
+.track-dot.done{background:#dcfce7;color:#16a34a}
+.track-dot.current{background:#dbeafe;color:#2563eb}
+.track-dot.pending{background:#f1f5f9;color:#94a3b8}
+.track-info h4{font-size:14px;font-weight:600;margin-bottom:2px}
+.track-info p{font-size:12px;color:#64748b}
+.modal-close{position:absolute;top:16px;right:16px;width:32px;height:32px;border-radius:8px;border:none;background:#f1f5f9;cursor:pointer;font-size:18px}
+
+.empty{text-align:center;padding:80px 20px;color:#94a3b8}
+.empty i{font-size:64px;margin-bottom:16px;display:block}
+.empty a{display:inline-block;margin-top:16px;padding:12px 28px;background:#2563eb;color:#fff;border-radius:10px;font-weight:600}
+</style>
+</head>
+<body>
+
+<header>
+<div class="header-wrap">
+<a href="/" class="logo"><i class="fas fa-book-open"></i>BookStore</a>
+<div class="header-actions">
+<a href="/pages/store.html"><i class="fas fa-store"></i> Cửa hàng</a>
+<a href="/pages/my-cart.html"><i class="fas fa-shopping-cart"></i> Giỏ hàng</a>
+<a href="/pages/my-profile.html"><i class="fas fa-user"></i> Tài khoản</a>
+</div>
+</div>
+</header>
+
+<div class="breadcrumb"><a href="/"><i class="fas fa-home"></i> Trang chủ</a> &rsaquo; <strong>Đơn hàng của tôi</strong></div>
+
+<div class="page-wrap">
+<div class="page-header">
+<h1><i class="fas fa-box" style="color:#2563eb;margin-right:8px"></i>Đơn hàng của tôi</h1>
+<div class="status-tabs">
+<button class="status-tab active" onclick="filterOrders('all',this)">Tất cả</button>
+<button class="status-tab" onclick="filterOrders('pending',this)">Chờ xử lý</button>
+<button class="status-tab" onclick="filterOrders('paid',this)">Đã thanh toán</button>
+<button class="status-tab" onclick="filterOrders('shipped',this)">Đang giao</button>
+<button class="status-tab" onclick="filterOrders('delivered',this)">Hoàn thành</button>
+<button class="status-tab" onclick="filterOrders('cancelled',this)">Đã hủy</button>
+</div>
+</div>
+<div id="ordersList"><div style="text-align:center;padding:40px"><i class="fas fa-spinner fa-spin" style="font-size:32px;color:#2563eb"></i></div></div>
+</div>
+
+<div class="modal-overlay" id="trackModal" onclick="if(event.target===this)this.classList.remove('show')">
+<div class="modal" style="position:relative">
+<button class="modal-close" onclick="document.getElementById('trackModal').classList.remove('show')">&times;</button>
+<h2><i class="fas fa-truck"></i> Theo dõi đơn hàng</h2>
+<div id="trackContent"></div>
+</div>
+</div>
+
+<script>
+const API='/api',token=localStorage.getItem('access_token'),userStr=localStorage.getItem('user');
+let currentUser=null,allOrders=[],orderItems={},payments={},shipments={},booksCache={};
+function authFetch(url,o={}){if(token){o.headers={...(o.headers||{}),'Authorization':'Bearer '+token}}return fetch(url,o)}
+if(token&&userStr){try{currentUser=JSON.parse(userStr)}catch(e){}}
+if(!currentUser){location.href='/pages/login.html'}
+
+async function loadAll(){
+    const cid=localStorage.getItem('customer_id');
+    if(!cid){document.getElementById('ordersList').innerHTML='<div class="empty"><i class="fas fa-user-circle"></i><h3>Chưa có hồ sơ</h3><a href="/pages/my-profile.html">Cập nhật hồ sơ</a></div>';return}
+    try{
+        const [ordersR,itemsR,paysR,shipsR,booksR]=await Promise.all([
+            authFetch(API+'/orders/'),authFetch(API+'/order-items/'),authFetch(API+'/payments/'),authFetch(API+'/shipments/'),authFetch(API+'/books/')
+        ]);
+        const od=await ordersR.json();const orders=Array.isArray(od)?od:(od.results||[]);
+        allOrders=orders.filter(o=>o.customer_id==cid).sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
+
+        const id=await itemsR.json();(Array.isArray(id)?id:(id.results||[])).forEach(i=>{if(!orderItems[i.order])orderItems[i.order]=[];orderItems[i.order].push(i)});
+        const pd=await paysR.json();(Array.isArray(pd)?pd:(pd.results||[])).forEach(p=>payments[p.order_id]=p);
+        const sd=await shipsR.json();(Array.isArray(sd)?sd:(sd.results||[])).forEach(s=>shipments[s.order_id]=s);
+        const bd=await booksR.json();(Array.isArray(bd)?bd:(bd.results||[])).forEach(b=>booksCache[b.id]=b);
+
+        filterOrders('all',document.querySelector('.status-tab.active'));
+    }catch(e){document.getElementById('ordersList').innerHTML='<div class="empty"><i class="fas fa-exclamation-triangle"></i>Lỗi tải đơn hàng</div>'}
+}
+
+function filterOrders(status,btn){
+    document.querySelectorAll('.status-tab').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    const filtered=status==='all'?allOrders:allOrders.filter(o=>o.status===status);
+    renderOrders(filtered);
+}
+
+function renderOrders(orders){
+    const el=document.getElementById('ordersList');
+    if(!orders.length){el.innerHTML='<div class="empty"><i class="fas fa-box-open"></i><h3>Không có đơn hàng nào</h3><a href="/pages/store.html">Mua sắm ngay</a></div>';return}
+
+    const colors=['#dbeafe','#fce7f3','#dcfce7','#fef9c3','#f3e8ff'];
+    el.innerHTML=orders.map(o=>{
+        const items=orderItems[o.id]||[];
+        const pay=payments[o.id];
+        const ship=shipments[o.id];
+        return `<div class="order-card">
+            <div class="order-header">
+                <div><span class="order-id">Đơn hàng #${o.id}</span><span class="order-date" style="margin-left:12px">${new Date(o.created_at).toLocaleDateString('vi-VN',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})}</span></div>
+                <span class="order-status status-${o.status}">${statusLabel(o.status)}</span>
+            </div>
+            <div class="order-body">
+                <div class="order-items">
+                    ${items.map(i=>{
+                        const book=booksCache[i.book_id]||{title:'Sách #'+i.book_id};
+                        return `<div class="order-item">
+                            <div class="oi-icon" style="background:${colors[i.book_id%5]}">${['📖','📚','📘','📗','📕'][i.book_id%5]}</div>
+                            <div class="oi-info"><h5>${book.title}</h5><span>SL: ${i.quantity} × $${parseFloat(i.price).toFixed(2)}</span></div>
+                            <div class="oi-price">$${(i.quantity*parseFloat(i.price)).toFixed(2)}</div>
+                        </div>`;
+                    }).join('')}
+                    ${!items.length?'<div style="color:#94a3b8;font-size:13px;padding:8px 0">Không có chi tiết sản phẩm</div>':''}
+                </div>
+                <div class="order-footer">
+                    <div class="order-total">Tổng: <span style="color:#dc2626">$${parseFloat(o.total_amount).toFixed(2)}</span>
+                    ${pay?`<span style="font-size:12px;color:#64748b;font-weight:400;margin-left:8px">(${payMethodLabel(pay.method)} - ${payStatusLabel(pay.status)})</span>`:''}
+                    </div>
+                    <div class="order-actions">
+                        <button class="btn-track" onclick="showTracking(${o.id})"><i class="fas fa-truck"></i> Theo dõi</button>
+                        ${o.status==='pending'?`<button onclick="cancelOrder(${o.id})" style="color:#dc2626;border-color:#fee2e2"><i class="fas fa-times"></i> Hủy</button>`:''}
+                    </div>
+                </div>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+function statusLabel(s){return{pending:'Chờ xử lý',paid:'Đã thanh toán',shipped:'Đang giao',delivered:'Hoàn thành',cancelled:'Đã hủy'}[s]||s}
+function payMethodLabel(m){return{credit_card:'Thẻ tín dụng',bank_transfer:'Chuyển khoản',cash:'Tiền mặt'}[m]||m}
+function payStatusLabel(s){return{pending:'Chờ TT',completed:'Đã TT',failed:'Thất bại'}[s]||s}
+
+function showTracking(orderId){
+    const o=allOrders.find(x=>x.id===orderId);
+    const ship=shipments[orderId];
+    const steps=[
+        {icon:'fa-clipboard-check',label:'Đặt hàng',desc:'Đơn hàng đã được tạo'},
+        {icon:'fa-credit-card',label:'Thanh toán',desc:'Xác nhận thanh toán'},
+        {icon:'fa-box',label:'Đang chuẩn bị',desc:'Đóng gói sản phẩm'},
+        {icon:'fa-truck',label:'Đang giao',desc:ship?'Mã vận đơn: '+(ship.tracking_number||'N/A'):'Chuyển đến đơn vị vận chuyển'},
+        {icon:'fa-check-circle',label:'Hoàn thành',desc:'Giao hàng thành công'}
+    ];
+    const statusOrder=['pending','paid','preparing','shipped','delivered'];
+    const currentIdx=o?Math.max(statusOrder.indexOf(o.status),0):0;
+    if(o&&o.status==='cancelled'){
+        document.getElementById('trackContent').innerHTML='<div style="text-align:center;padding:20px;color:#dc2626"><i class="fas fa-times-circle" style="font-size:48px;margin-bottom:12px;display:block"></i>Đơn hàng đã bị hủy</div>';
+    }else{
+        document.getElementById('trackContent').innerHTML=steps.map((s,i)=>{
+            const cls=i<currentIdx?'done':i===currentIdx?'current':'pending';
+            return `<div class="track-step"><div class="track-dot ${cls}"><i class="fas ${s.icon}"></i></div><div class="track-info"><h4>${s.label}</h4><p>${s.desc}</p></div></div>`;
+        }).join('');
+    }
+    document.getElementById('trackModal').classList.add('show');
+}
+
+async function cancelOrder(orderId){
+    if(!confirm('Hủy đơn hàng #'+orderId+'?'))return;
+    try{
+        const r=await authFetch(API+'/orders/'+orderId+'/',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:'cancelled'})});
+        if(r.ok){loadAll()}else alert('Lỗi hủy đơn');
+    }catch(e){alert('Lỗi kết nối')}
+}
+
+loadAll();
+</script>
+</body>
+</html>

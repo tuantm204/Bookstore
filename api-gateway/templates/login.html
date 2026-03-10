@@ -1,123 +1,111 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BookStore - Login</title>
-    <style>
-        *{margin:0;padding:0;box-sizing:border-box}
-        body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background:#f4f6f9;color:#333;min-height:100vh;display:flex;flex-direction:column}
-        .navbar{background:#2c3e50;color:#fff;padding:15px 30px;display:flex;justify-content:space-between;align-items:center}
-        .navbar h1{font-size:24px}.nav-links a{color:#fff;text-decoration:none;margin-left:20px;font-size:16px}
-        .nav-links a:hover{text-decoration:underline}
-        .login-container{flex:1;display:flex;align-items:center;justify-content:center;padding:40px 20px}
-        .login-card{background:#fff;border-radius:16px;box-shadow:0 8px 30px rgba(0,0,0,0.12);padding:40px;width:100%;max-width:420px}
-        .login-card h2{text-align:center;color:#2c3e50;margin-bottom:8px;font-size:28px}
-        .login-card .subtitle{text-align:center;color:#888;margin-bottom:30px;font-size:14px}
-        .form-group{margin-bottom:20px}
-        .form-group label{display:block;margin-bottom:6px;font-weight:600;color:#2c3e50;font-size:14px}
-        .form-group input{width:100%;padding:12px 16px;border:2px solid #e0e0e0;border-radius:10px;font-size:15px;transition:border-color .3s}
-        .form-group input:focus{outline:none;border-color:#3498db}
-        .btn-login{width:100%;padding:14px;background:#3498db;color:#fff;border:none;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer;transition:background .3s}
-        .btn-login:hover{background:#2980b9}
-        .btn-login:disabled{background:#95c4e8;cursor:not-allowed}
-        .msg{padding:12px 16px;border-radius:8px;margin-bottom:20px;display:none;font-size:14px}
-        .msg.ok{background:#d4edda;color:#155724;display:block}
-        .msg.err{background:#f8d7da;color:#721c24;display:block}
-        .link-row{text-align:center;margin-top:20px;font-size:14px;color:#666}
-        .link-row a{color:#3498db;text-decoration:none;font-weight:600}
-        .link-row a:hover{text-decoration:underline}
-        .icon{font-size:48px;text-align:center;margin-bottom:10px}
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Đăng nhập - BookStore</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;min-height:100vh;display:flex;background:#f8fafc}
+.left-panel{flex:1;background:linear-gradient(135deg,#1e40af 0%,#7c3aed 100%);display:flex;flex-direction:column;justify-content:center;padding:60px;color:#fff;position:relative;overflow:hidden}
+.left-panel::before{content:'';position:absolute;width:300px;height:300px;background:rgba(255,255,255,.08);border-radius:50%;top:-50px;right:-50px}
+.left-panel::after{content:'';position:absolute;width:200px;height:200px;background:rgba(255,255,255,.05);border-radius:50%;bottom:-30px;left:-30px}
+.left-panel .brand{font-size:28px;font-weight:800;margin-bottom:40px;display:flex;align-items:center;gap:10px}
+.left-panel h2{font-size:36px;font-weight:800;line-height:1.3;margin-bottom:16px}
+.left-panel p{font-size:16px;opacity:.8;line-height:1.6;margin-bottom:32px}
+.features-list{list-style:none}
+.features-list li{display:flex;align-items:center;gap:12px;padding:10px 0;font-size:15px;opacity:.9}
+.features-list li i{width:24px;text-align:center;font-size:16px}
+.right-panel{width:520px;display:flex;align-items:center;justify-content:center;padding:40px}
+.login-card{width:100%;max-width:400px}
+.login-card h2{font-size:28px;font-weight:800;color:#1e293b;margin-bottom:8px}
+.login-card .subtitle{color:#64748b;margin-bottom:32px;font-size:14px}
+.form-group{margin-bottom:20px}
+.form-group label{display:block;font-size:13px;font-weight:600;color:#475569;margin-bottom:6px}
+.form-group .input-wrap{position:relative}
+.form-group input{width:100%;padding:12px 16px 12px 44px;border:2px solid #e2e8f0;border-radius:10px;font-size:14px;font-family:inherit;transition:all .2s}
+.form-group input:focus{outline:none;border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+.form-group .input-wrap i{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#94a3b8;font-size:16px}
+.btn-login{width:100%;padding:14px;background:#2563eb;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;transition:background .2s}
+.btn-login:hover{background:#1d4ed8}
+.btn-login:disabled{opacity:.6;cursor:not-allowed}
+.divider{display:flex;align-items:center;gap:12px;margin:24px 0;color:#94a3b8;font-size:13px}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:#e2e8f0}
+.link-row{text-align:center;font-size:14px;color:#64748b}
+.link-row a{color:#2563eb;font-weight:600;text-decoration:none}.link-row a:hover{text-decoration:underline}
+.msg{padding:12px 16px;border-radius:10px;margin-bottom:20px;display:none;font-size:14px;font-weight:500}
+.msg.ok{background:#dcfce7;color:#166534;display:flex;align-items:center;gap:8px}
+.msg.err{background:#fee2e2;color:#991b1b;display:flex;align-items:center;gap:8px}
+.back-home{display:inline-flex;align-items:center;gap:6px;color:#64748b;font-size:13px;margin-bottom:24px;text-decoration:none}
+.back-home:hover{color:#2563eb}
+@media(max-width:960px){.left-panel{display:none}.right-panel{width:100%}}
+</style>
 </head>
 <body>
-    <nav class="navbar">
-        <h1>📚 BookStore Microservices</h1>
-        <div class="nav-links">
-            <a href="/">Home</a>
-            <a href="/pages/login.html">Login</a>
-            <a href="/pages/register.html">Register</a>
-        </div>
-    </nav>
-    <div class="login-container">
-        <div class="login-card">
-            <div class="icon">🔐</div>
-            <h2>Đăng nhập</h2>
-            <p class="subtitle">Đăng nhập để truy cập hệ thống BookStore</p>
-            <div id="msg" class="msg"></div>
-            <div class="form-group">
-                <label>Tên đăng nhập</label>
-                <input type="text" id="username" placeholder="Nhập username" autofocus>
-            </div>
-            <div class="form-group">
-                <label>Mật khẩu</label>
-                <input type="password" id="password" placeholder="Nhập mật khẩu">
-            </div>
-            <button class="btn-login" id="loginBtn" onclick="doLogin()">Đăng nhập</button>
-            <div class="link-row">
-                Chưa có tài khoản? <a href="/pages/register.html">Đăng ký ngay</a>
-            </div>
-        </div>
-    </div>
+<div class="left-panel">
+<div class="brand"><i class="fas fa-book-open"></i> BookStore</div>
+<h2>Chào mừng trở lại!</h2>
+<p>Đăng nhập để truy cập hàng nghìn đầu sách, theo dõi đơn hàng và nhận gợi ý phù hợp.</p>
+<ul class="features-list">
+<li><i class="fas fa-check-circle"></i> Hàng nghìn đầu sách chất lượng</li>
+<li><i class="fas fa-check-circle"></i> Giao hàng nhanh toàn quốc</li>
+<li><i class="fas fa-check-circle"></i> Đổi trả dễ dàng trong 7 ngày</li>
+<li><i class="fas fa-check-circle"></i> Tích điểm & ưu đãi thành viên</li>
+</ul>
+</div>
+<div class="right-panel">
+<div class="login-card">
+<a href="/" class="back-home"><i class="fas fa-arrow-left"></i> Về trang chủ</a>
+<h2>Đăng nhập</h2>
+<p class="subtitle">Nhập thông tin tài khoản của bạn</p>
+<div id="msg" class="msg"></div>
+<div class="form-group">
+<label>Tên đăng nhập</label>
+<div class="input-wrap"><i class="fas fa-user"></i><input type="text" id="username" placeholder="username" autofocus></div>
+</div>
+<div class="form-group">
+<label>Mật khẩu</label>
+<div class="input-wrap"><i class="fas fa-lock"></i><input type="password" id="password" placeholder="••••••••"></div>
+</div>
+<button class="btn-login" id="loginBtn" onclick="doLogin()"><i class="fas fa-sign-in-alt"></i> Đăng nhập</button>
+<div class="divider">hoặc</div>
+<div class="link-row">Chưa có tài khoản? <a href="/pages/register.html">Đăng ký ngay</a></div>
+</div>
+</div>
 
-    <script>
-        const API = '/api/auth';
+<script>
+const API='/api/auth';
+const token=localStorage.getItem('access_token');
+if(token){fetch(`${API}/me/`,{headers:{'Authorization':`Bearer ${token}`}}).then(r=>{if(r.ok)location.href='/'}).catch(()=>{})}
 
-        // Check if already logged in
-        const token = localStorage.getItem('access_token');
-        if (token) {
-            fetch(`${API}/me/`, { headers: { 'Authorization': `Bearer ${token}` } })
-                .then(r => { if (r.ok) window.location.href = '/'; })
-                .catch(() => {});
-        }
+function showMsg(text,type){const el=document.getElementById('msg');el.innerHTML=`<i class="fas fa-${type==='ok'?'check-circle':'exclamation-circle'}"></i> ${text}`;el.className='msg '+type}
 
-        function showMsg(text, type) {
-            const el = document.getElementById('msg');
-            el.textContent = text;
-            el.className = 'msg ' + type;
-        }
+async function doLogin(){
+    const username=document.getElementById('username').value.trim();
+    const password=document.getElementById('password').value;
+    if(!username||!password){showMsg('Vui lòng nhập đầy đủ thông tin','err');return}
+    const btn=document.getElementById('loginBtn');
+    btn.disabled=true;btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> Đang đăng nhập...';
+    try{
+        const resp=await fetch(`${API}/login/`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username,password})});
+        const data=await resp.json();
+        if(resp.ok){
+            localStorage.setItem('access_token',data.access_token);
+            localStorage.setItem('refresh_token',data.refresh_token);
+            localStorage.setItem('user',JSON.stringify(data.user));
+            showMsg('Đăng nhập thành công!','ok');
+            const role=data.user&&data.user.role;
+            const isStaff=['admin','manager','staff'].includes(role);
+            setTimeout(()=>location.href=isStaff?'/pages/admin.html':'/',800);
+        }else{showMsg(data.error||'Đăng nhập thất bại','err')}
+    }catch(e){showMsg('Không thể kết nối đến server','err')}
+    finally{btn.disabled=false;btn.innerHTML='<i class="fas fa-sign-in-alt"></i> Đăng nhập'}
+}
 
-        async function doLogin() {
-            const username = document.getElementById('username').value.trim();
-            const password = document.getElementById('password').value;
-            if (!username || !password) { showMsg('Vui lòng nhập đầy đủ thông tin', 'err'); return; }
-
-            const btn = document.getElementById('loginBtn');
-            btn.disabled = true;
-            btn.textContent = 'Đang đăng nhập...';
-
-            try {
-                const resp = await fetch(`${API}/login/`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, password })
-                });
-                const data = await resp.json();
-
-                if (resp.ok) {
-                    localStorage.setItem('access_token', data.access_token);
-                    localStorage.setItem('refresh_token', data.refresh_token);
-                    localStorage.setItem('user', JSON.stringify(data.user));
-                    showMsg('Đăng nhập thành công! Đang chuyển hướng...', 'ok');
-                    setTimeout(() => window.location.href = '/', 1000);
-                } else {
-                    showMsg(data.error || 'Đăng nhập thất bại', 'err');
-                }
-            } catch (e) {
-                showMsg('Không thể kết nối đến server', 'err');
-            } finally {
-                btn.disabled = false;
-                btn.textContent = 'Đăng nhập';
-            }
-        }
-
-        // Enter key support
-        document.getElementById('password').addEventListener('keypress', e => {
-            if (e.key === 'Enter') doLogin();
-        });
-        document.getElementById('username').addEventListener('keypress', e => {
-            if (e.key === 'Enter') document.getElementById('password').focus();
-        });
-    </script>
+document.getElementById('password').addEventListener('keypress',e=>{if(e.key==='Enter')doLogin()});
+document.getElementById('username').addEventListener('keypress',e=>{if(e.key==='Enter')document.getElementById('password').focus()});
+</script>
 </body>
 </html>

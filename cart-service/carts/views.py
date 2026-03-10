@@ -25,8 +25,16 @@ class CartItemViewSet(viewsets.ModelViewSet):
     queryset = CartItem.objects.all()
     serializer_class = CartItemSerializer
 
+    def get_queryset(self):
+        queryset = CartItem.objects.all()
+        cart_id = self.request.query_params.get('cart')
+        if cart_id:
+            queryset = queryset.filter(cart_id=cart_id)
+        return queryset
+
     def create(self, request, *args, **kwargs):
         book_id = request.data.get('book_id')
+        cart_id = request.data.get('cart')
 
         # Check if book exists via book-service
         try:
@@ -42,4 +50,28 @@ class CartItemViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_503_SERVICE_UNAVAILABLE
             )
 
+        # Check if item already exists in cart - if so, update quantity
+        if cart_id and book_id:
+            try:
+                existing = CartItem.objects.get(cart_id=cart_id, book_id=book_id)
+                new_qty = existing.quantity + int(request.data.get('quantity', 1))
+                existing.quantity = new_qty
+                existing.save()
+                return Response(CartItemSerializer(existing).data, status=status.HTTP_200_OK)
+            except CartItem.DoesNotExist:
+                pass
+
         return super().create(request, *args, **kwargs)
+
+    def partial_update(self, request, *args, **kwargs):
+        """PATCH - update quantity"""
+        instance = self.get_object()
+        quantity = request.data.get('quantity')
+        if quantity is not None:
+            instance.quantity = int(quantity)
+            if instance.quantity <= 0:
+                instance.delete()
+                return Response({'message': 'Item removed (quantity <= 0)'}, status=status.HTTP_200_OK)
+            instance.save()
+            return Response(CartItemSerializer(instance).data)
+        return super().partial_update(request, *args, **kwargs)

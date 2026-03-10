@@ -11,4 +11,5 @@ urlpatterns = [
     path('assign-role/', views.assign_role, name='assign-role'),
     path('users/', views.list_users, name='list-users'),
     path('users/<int:user_id>/deactivate/', views.deactivate_user, name='deactivate-user'),
+    path('users/<int:user_id>/reset-password/', views.admin_reset_password, name='admin-reset-password'),
 ]

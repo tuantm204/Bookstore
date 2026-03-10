@@ -1,88 +1,109 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BookStore - Catalogs</title>
-    <style>
-        *{margin:0;padding:0;box-sizing:border-box}
-        body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background:#f4f6f9;color:#333}
-        .navbar{background:#2c3e50;color:#fff;padding:15px 30px;display:flex;justify-content:space-between;align-items:center}
-        .navbar h1{font-size:24px}.nav-links a{color:#fff;text-decoration:none;margin-left:20px;font-size:16px}
-        .nav-links a:hover{text-decoration:underline}
-        .container{max-width:1100px;margin:30px auto;padding:0 20px}
-        h2{margin-bottom:20px}
-        .card{background:#fff;padding:20px;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.1);margin-bottom:20px}
-        .card h3{margin-bottom:15px}
-        .form-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px}
-        .form-row input,.form-row select,.form-row textarea{flex:1;padding:10px;border:1px solid #ddd;border-radius:6px;font-size:14px;min-width:120px}
-        .btn{padding:10px 20px;border:none;border-radius:6px;cursor:pointer;font-size:14px;font-weight:bold}
-        .btn-primary{background:#3498db;color:#fff}.btn-primary:hover{background:#2980b9}
-        .btn-danger{background:#e74c3c;color:#fff}.btn-danger:hover{background:#c0392b}
-        .btn-sm{padding:6px 12px;font-size:12px}
-        table{width:100%;border-collapse:collapse;background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.1)}
-        th,td{padding:12px 15px;text-align:left;border-bottom:1px solid #eee}
-        th{background:#2c3e50;color:#fff}tr:hover{background:#f8f9fa}
-        .msg{padding:10px 15px;border-radius:6px;margin-bottom:15px;display:none}
-        .msg.ok{background:#d4edda;color:#155724;display:block}
-        .msg.err{background:#f8d7da;color:#721c24;display:block}
-    </style>
-</head>
+<html lang="vi">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Quản lý Danh mục - BookStore Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+<style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Inter',sans-serif;background:#f1f5f9;color:#1e293b;display:flex;min-height:100vh}a{text-decoration:none;color:inherit}
+.sidebar{width:260px;background:#0f172a;color:#94a3b8;display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100}
+.sidebar-brand{padding:20px 24px;display:flex;align-items:center;gap:10px;font-size:20px;font-weight:800;color:#fff;border-bottom:1px solid #1e293b}.sidebar-brand i{color:#3b82f6}
+.sidebar-menu{flex:1;padding:16px 12px;overflow-y:auto}
+.menu-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;padding:16px 12px 8px;color:#475569}
+.menu-item{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;font-size:14px;color:#94a3b8;transition:all .2s;margin-bottom:2px}
+.menu-item:hover{background:#1e293b;color:#e2e8f0}.menu-item.active{background:#1d4ed8;color:#fff}.menu-item i{width:20px;text-align:center}
+.sidebar-footer{padding:16px;border-top:1px solid #1e293b}
+.user-card{display:flex;align-items:center;gap:10px;padding:8px}
+.user-avatar{width:36px;height:36px;border-radius:8px;background:#3b82f6;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:14px}
+.user-info .name{font-size:13px;font-weight:600;color:#e2e8f0}.user-info .role{font-size:11px;color:#64748b}
+.main{flex:1;margin-left:260px}
+.topbar{background:#fff;padding:16px 28px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 1px 3px rgba(0,0,0,.06);position:sticky;top:0;z-index:50}
+.topbar h1{font-size:20px;font-weight:700;display:flex;align-items:center;gap:8px}.topbar h1 i{color:#2563eb}
+.topbar-actions{display:flex;gap:12px;align-items:center}
+.topbar-actions a,.topbar-actions button{background:none;border:none;color:#64748b;font-size:14px;cursor:pointer;display:flex;align-items:center;gap:6px;font-family:inherit}
+.btn-store{background:#eff6ff!important;color:#2563eb!important;padding:8px 16px;border-radius:8px;font-weight:600}
+.content{padding:28px}
+.card{background:#fff;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,.06);margin-bottom:24px}
+.card-header{padding:20px 24px;border-bottom:1px solid #f1f5f9;display:flex;align-items:center;justify-content:space-between}
+.card-header h3{font-size:16px;font-weight:700;display:flex;align-items:center;gap:8px}
+.card-body{padding:24px}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px}
+.btn{padding:10px 20px;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600;font-family:inherit;display:inline-flex;align-items:center;gap:6px;transition:all .2s}
+.btn-primary{background:#2563eb;color:#fff}.btn-primary:hover{background:#1d4ed8}
+.btn-danger{background:#ef4444;color:#fff}.btn-danger:hover{background:#dc2626}
+.btn-success{background:#16a34a;color:#fff}.btn-success:hover{background:#15803d}
+.btn-warning{background:#f59e0b;color:#fff}.btn-warning:hover{background:#d97706}
+.btn-info{background:#0ea5e9;color:#fff}.btn-info:hover{background:#0284c7}
+.btn-secondary{background:#64748b;color:#fff}.btn-secondary:hover{background:#475569}
+.btn-sm{padding:6px 12px;font-size:12px}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;padding:12px 20px;font-size:12px;font-weight:700;color:#64748b;text-transform:uppercase;background:#f8fafc}
+td{padding:12px 20px;font-size:14px;border-bottom:1px solid #f8fafc}
+tr:hover td{background:#f8fafc}
+.badge{display:inline-block;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:600}
+.msg{padding:12px 16px;border-radius:8px;margin-bottom:16px;display:none;font-size:14px}
+.msg.ok{background:#dcfce7;color:#166534;display:block}.msg.err{background:#fee2e2;color:#991b1b;display:block}
+.modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);z-index:1000;justify-content:center;align-items:center}
+.modal-overlay.active{display:flex}
+.modal{background:#fff;border-radius:16px;padding:32px;width:90%;max-width:560px;max-height:85vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.modal h3{margin-bottom:20px;font-size:20px;display:flex;align-items:center;gap:8px}
+.modal-actions{display:flex;gap:10px;margin-top:24px;justify-content:flex-end}
+.stars{color:#f59e0b;font-size:14px}
+select.status-select{padding:6px 10px;border:2px solid #e2e8f0;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit}
+.badge-pending{background:#fef3c7;color:#92400e}.badge-paid,.badge-completed{background:#dcfce7;color:#166534}
+.badge-shipped,.badge-in_transit{background:#dbeafe;color:#1e40af}.badge-delivered{background:#d1fae5;color:#065f46}
+.badge-cancelled,.badge-failed{background:#fee2e2;color:#991b1b}.badge-preparing{background:#fef3c7;color:#92400e}
+.order-item{display:flex;align-items:center;gap:12px;padding:12px 14px;background:#f8fafc;border-radius:8px;margin-bottom:8px;font-size:14px}
+.order-item img{width:48px;height:64px;object-fit:cover;border-radius:6px;border:1px solid #e2e8f0}
+.order-item .oi-info{flex:1}
+.order-item .oi-info .oi-title{font-weight:600;color:#1e293b}.order-item .oi-info .oi-sub{font-size:12px;color:#64748b}
+.order-item .oi-price{font-weight:700;color:#dc2626;white-space:nowrap}
+
+.form-field{display:flex;flex-direction:column;gap:4px}
+.form-field label{font-size:12px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:.5px}
+.form-field input,.form-field select,.form-field textarea{padding:10px 14px;border:2px solid #e2e8f0;border-radius:8px;font-size:14px;font-family:inherit}
+.form-field input:focus,.form-field select:focus,.form-field textarea:focus{outline:none;border-color:#2563eb}
+.img-preview{width:48px;height:48px;border-radius:8px;object-fit:cover;border:1px solid #e2e8f0}
+.img-preview-lg{width:100%;max-width:200px;max-height:120px;border-radius:8px;object-fit:cover;margin-top:4px;border:1px solid #e2e8f0}
+</style></head>
 <body>
-    <nav class="navbar">
-        <h1>📚 BookStore</h1>
-        <div class="nav-links">
-            <a href="/">Home</a>
-            <a href="/pages/books.html">Books</a>
-            <a href="/pages/cart.html">Cart</a>
-            <a href="/pages/customers.html">Customers</a>
-            <a href="/pages/orders.html">Orders</a>
-        </div>
-    </nav>
-    <div class="container">
-        <h2>📂 Catalogs Management</h2>
-        <div id="msg" class="msg"></div>
-        <div class="card">
-            <h3>Add New Catalog</h3>
-            <div class="form-row">
-                <input type="text" id="name" placeholder="Catalog Name">
-                <input type="text" id="description" placeholder="Description">
-            </div>
-            <button class="btn btn-primary" onclick="addItem()">Add Catalog</button>
-        </div>
-        <table>
-            <thead><tr><th>ID</th><th>Name</th><th>Description</th><th>Created</th><th>Actions</th></tr></thead>
-            <tbody id="tbl"><tr><td colspan="5">Loading...</td></tr></tbody>
-        </table>
-    </div>
+<aside class="sidebar"><div class="sidebar-brand"><i class="fas fa-book-open"></i> BookStore</div><nav class="sidebar-menu"><div class="menu-label">Tổng quan</div><a class="menu-item" href="/pages/admin.html"><i class="fas fa-gauge-high"></i> Dashboard</a><div class="menu-label">Quản lý</div><a class="menu-item" href="/pages/books.html"><i class="fas fa-book"></i> Sách</a><a class="menu-item active" href="/pages/catalogs.html"><i class="fas fa-layer-group"></i> Danh mục</a><a class="menu-item" href="/pages/customers.html"><i class="fas fa-users"></i> Khách hàng</a><a class="menu-item" href="/pages/orders.html"><i class="fas fa-box"></i> Đơn hàng</a><a class="menu-item" href="/pages/cart.html"><i class="fas fa-shopping-cart"></i> Giỏ hàng</a><div class="menu-label">Tài chính & Vận chuyển</div><a class="menu-item" href="/pages/payments.html"><i class="fas fa-credit-card"></i> Thanh toán</a><a class="menu-item" href="/pages/shipments.html"><i class="fas fa-truck"></i> Vận chuyển</a><div class="menu-label">Nội dung</div><a class="menu-item" href="/pages/comments.html"><i class="fas fa-comments"></i> Bình luận</a><a class="menu-item" href="/pages/recommender.html"><i class="fas fa-robot"></i> Gợi ý AI</a><div class="menu-label">Nhân sự</div><a class="menu-item" href="/pages/staffs.html"><i class="fas fa-user-tie"></i> Nhân viên</a><a class="menu-item" href="/pages/managers.html"><i class="fas fa-user-shield"></i> Quản lý</a></nav><div class="sidebar-footer"><div class="user-card"><div class="user-avatar" id="sideAvatar">A</div><div class="user-info"><div class="name" id="sideName">Admin</div><div class="role" id="sideRole">admin</div></div></div></div></aside>
+<div class="main">
+<div class="topbar"><h1><i class="fas fa-layer-group"></i> Quản lý Danh mục</h1>
+<div class="topbar-actions"><a href="/" class="btn-store"><i class="fas fa-store"></i> Cửa hàng</a><button onclick="logout()"><i class="fas fa-sign-out-alt"></i> Đăng xuất</button></div></div>
+<div class="content"><div id="msg" class="msg"></div>
+<div class="card"><div class="card-header"><h3><i class="fas fa-plus-circle"></i> Thêm danh mục mới</h3></div>
+<div class="card-body"><div class="form-grid">
+<div class="form-field"><label>Tên danh mục *</label><input type="text" id="name" placeholder="Nhập tên danh mục"></div>
+<div class="form-field"><label>Mô tả</label><input type="text" id="description" placeholder="Mô tả ngắn"></div>
+</div><button class="btn btn-primary" style="margin-top:16px" onclick="addItem()"><i class="fas fa-plus"></i> Thêm</button></div></div>
+<div class="card"><div class="card-header"><h3><i class="fas fa-list"></i> Danh sách danh mục</h3></div>
+<table><thead><tr><th>ID</th><th>Tên</th><th>Mô tả</th><th>Ngày tạo</th><th>Thao tác</th></tr></thead>
+<tbody id="tbl"><tr><td colspan="5">Đang tải...</td></tr></tbody></table></div></div></div>
+
+<div class="modal-overlay" id="editModal"><div class="modal">
+<h3><i class="fas fa-edit" style="color:#f59e0b"></i> Chỉnh sửa danh mục</h3>
+<input type="hidden" id="edit_id">
+<div class="form-grid">
+<div class="form-field"><label>Tên danh mục</label><input type="text" id="edit_name"></div>
+<div class="form-field"><label>Mô tả</label><input type="text" id="edit_description"></div>
+</div>
+<div class="modal-actions"><button class="btn btn-secondary" onclick="closeModal()">Hủy</button><button class="btn btn-success" onclick="saveEdit()"><i class="fas fa-save"></i> Lưu</button></div></div></div>
+
 <script>
-const API='/api',SVC='catalogs';
-const TOKEN=localStorage.getItem('access_token');
+var TOKEN=localStorage.getItem('access_token');
 if(!TOKEN)window.location.href='/pages/login.html';
-const _fetch=window.fetch;window.fetch=(url,opts={})=>{opts.headers={...(opts.headers||{}),'Authorization':'Bearer '+TOKEN};return _fetch(url,opts)};
-function showMsg(t,ok){const e=document.getElementById('msg');e.textContent=t;e.className='msg '+(ok?'ok':'err');setTimeout(()=>e.className='msg',3000)}
-async function load(){
-    try{
-        const r=await fetch(API+'/'+SVC+'/');const d=await r.json();
-        const items=Array.isArray(d)?d:(d.results||[]);
-        const tb=document.getElementById('tbl');
-        if(!items.length){tb.innerHTML='<tr><td colspan="5">No catalogs yet</td></tr>';return}
-        tb.innerHTML=items.map(c=>`<tr>
-            <td>${c.id}</td><td>${c.name}</td><td>${c.description||'-'}</td>
-            <td>${new Date(c.created_at).toLocaleDateString()}</td>
-            <td><button class="btn btn-danger btn-sm" onclick="del(${c.id})">🗑</button></td>
-            </tr>`).join('');
-    }catch(e){document.getElementById('tbl').innerHTML='<tr><td colspan="5">Error loading</td></tr>'}
-}
-async function addItem(){
-    const data={name:document.getElementById('name').value,description:document.getElementById('description').value};
-    if(!data.name){showMsg('Catalog name required',false);return}
-    const r=await fetch(API+'/'+SVC+'/',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
-    if(r.ok){showMsg('Catalog added!',true);['name','description'].forEach(id=>document.getElementById(id).value='');load()}
-    else{const e=await r.json();showMsg(JSON.stringify(e),false)}
-}
-async function del(id){if(!confirm('Delete catalog #'+id+'?'))return;await fetch(API+'/'+SVC+'/'+id+'/',{method:'DELETE'});load()}
+var _fetch=window.fetch;window.fetch=function(url,opts){opts=opts||{};opts.headers=Object.assign({},opts.headers||{},{'Authorization':'Bearer '+TOKEN});return _fetch(url,opts)};
+function showMsg(t,ok){var e=document.getElementById('msg');e.textContent=t;e.className='msg '+(ok?'ok':'err');setTimeout(function(){e.className='msg'},3000)}
+function logout(){localStorage.clear();window.location.href='/pages/login.html'}
+try{var u=JSON.parse(localStorage.getItem('user')||'{}');document.getElementById('sideName').textContent=u.full_name||u.username||'Admin';document.getElementById('sideRole').textContent=u.role||'admin';document.getElementById('sideAvatar').textContent=(u.full_name||u.username||'A')[0].toUpperCase();if(['admin','manager','staff'].indexOf(u.role)<0)window.location.href='/'}catch(e){}
+var API='/api';
+var SVC='catalogs';
+function load(){fetch(API+'/'+SVC+'/').then(function(r){return r.json()}).then(function(d){var items=Array.isArray(d)?d:(d.results||[]);var tb=document.getElementById('tbl');if(!items.length){tb.innerHTML='<tr><td colspan="5">Chưa có danh mục</td></tr>';return}tb.innerHTML=items.map(function(c){return '<tr><td><strong>#'+c.id+'</strong></td><td><strong>'+c.name+'</strong></td><td>'+(c.description||'-')+'</td><td>'+new Date(c.created_at).toLocaleDateString('vi-VN')+'</td><td><button class="btn btn-warning btn-sm" onclick="openEdit('+c.id+')"><i class="fas fa-edit"></i></button> <button class="btn btn-danger btn-sm" onclick="del('+c.id+')"><i class="fas fa-trash"></i></button></td></tr>'}).join('')}).catch(function(){document.getElementById('tbl').innerHTML='<tr><td colspan="5">Lỗi tải</td></tr>'})}
+function addItem(){var data={name:document.getElementById('name').value,description:document.getElementById('description').value};if(!data.name){showMsg('Vui lòng nhập tên',false);return}fetch(API+'/'+SVC+'/',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)}).then(function(r){if(r.ok){showMsg('Thêm thành công!',true);['name','description'].forEach(function(id){document.getElementById(id).value=''});load()}else{r.json().then(function(e){showMsg(JSON.stringify(e),false)})}})}
+function openEdit(id){fetch(API+'/'+SVC+'/'+id+'/').then(function(r){return r.json()}).then(function(c){document.getElementById('edit_id').value=c.id;document.getElementById('edit_name').value=c.name||'';document.getElementById('edit_description').value=c.description||'';document.getElementById('editModal').classList.add('active')}).catch(function(){showMsg('Lỗi',false)})}
+function closeModal(){document.getElementById('editModal').classList.remove('active')}
+function saveEdit(){var id=document.getElementById('edit_id').value;if(!id)return;var data={name:document.getElementById('edit_name').value,description:document.getElementById('edit_description').value};fetch(API+'/'+SVC+'/'+id+'/',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)}).then(function(r){if(r.ok){showMsg('Cập nhật thành công!',true);closeModal();load()}else{r.json().then(function(e){showMsg('Lỗi: '+JSON.stringify(e),false)})}})}
+function del(id){if(!confirm('Xóa #'+id+'?'))return;fetch(API+'/'+SVC+'/'+id+'/',{method:'DELETE'}).then(function(){showMsg('Đã xóa',true);load()})}
+document.getElementById('editModal').addEventListener('click',function(e){if(e.target===this)closeModal()});
 load();
-</script>
-</body>
-</html>
+</script></body></html>

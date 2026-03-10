@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Tài khoản - BookStore</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:#f8fafc;color:#1e293b}
+a{text-decoration:none;color:inherit}
+header{background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.08);position:sticky;top:0;z-index:100}
+.header-wrap{max-width:1280px;margin:0 auto;padding:12px 24px;display:flex;align-items:center;gap:24px}
+.logo{font-size:24px;font-weight:800;color:#2563eb}.logo i{margin-right:6px}
+.header-actions{display:flex;align-items:center;gap:16px;margin-left:auto}
+.header-actions a{color:#64748b;font-size:14px;display:flex;align-items:center;gap:6px}
+.header-actions a:hover{color:#2563eb}
+
+.profile-layout{max-width:1000px;margin:32px auto;padding:0 24px;display:grid;grid-template-columns:280px 1fr;gap:24px}
+
+/* Sidebar */
+.profile-sidebar{background:#fff;border-radius:12px;padding:24px;box-shadow:0 1px 3px rgba(0,0,0,.06);height:fit-content}
+.avatar-section{text-align:center;padding-bottom:20px;border-bottom:1px solid #f1f5f9;margin-bottom:16px}
+.avatar{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#2563eb,#7c3aed);display:flex;align-items:center;justify-content:center;color:#fff;font-size:32px;font-weight:700;margin:0 auto 12px}
+.avatar-name{font-size:16px;font-weight:700}
+.avatar-email{font-size:13px;color:#64748b}
+.avatar-role{display:inline-block;margin-top:8px;padding:3px 12px;border-radius:6px;font-size:12px;font-weight:700;text-transform:uppercase}
+.role-admin{background:#fee2e2;color:#dc2626}.role-manager{background:#fef9c3;color:#ca8a04}.role-staff{background:#dcfce7;color:#16a34a}.role-customer{background:#dbeafe;color:#2563eb}
+.profile-nav{list-style:none}
+.profile-nav a{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;font-size:14px;color:#475569;transition:all .2s;margin-bottom:2px}
+.profile-nav a:hover,.profile-nav a.active{background:#eff6ff;color:#2563eb;font-weight:600}
+.profile-nav a i{width:20px;text-align:center}
+
+/* Content */
+.profile-content{}
+.profile-card{background:#fff;border-radius:12px;padding:28px;box-shadow:0 1px 3px rgba(0,0,0,.06);margin-bottom:20px}
+.profile-card h2{font-size:18px;font-weight:700;margin-bottom:20px;display:flex;align-items:center;gap:10px}
+.profile-card h2 i{color:#2563eb}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.form-group{margin-bottom:0}
+.form-group.full{grid-column:1/-1}
+.form-group label{display:block;font-size:13px;font-weight:600;color:#475569;margin-bottom:6px}
+.form-group input,.form-group select{width:100%;padding:10px 14px;border:2px solid #e2e8f0;border-radius:8px;font-size:14px;font-family:inherit;transition:border .2s}
+.form-group input:focus,.form-group select:focus{outline:none;border-color:#2563eb}
+.form-group input:disabled{background:#f8fafc;color:#94a3b8}
+.btn-row{display:flex;gap:12px;margin-top:20px}
+.btn-save{padding:12px 28px;background:#2563eb;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:8px;transition:background .2s}
+.btn-save:hover{background:#1d4ed8}
+.btn-cancel{padding:12px 28px;background:#f1f5f9;color:#475569;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit}
+.success-msg{padding:12px 16px;background:#dcfce7;color:#166534;border-radius:8px;font-size:14px;margin-bottom:16px;display:none}
+.error-msg{padding:12px 16px;background:#fee2e2;color:#991b1b;border-radius:8px;font-size:14px;margin-bottom:16px;display:none}
+
+.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px}
+.stat-card{background:#f8fafc;border-radius:10px;padding:16px;text-align:center}
+.stat-card .num{font-size:28px;font-weight:800;color:#2563eb}
+.stat-card .lbl{font-size:12px;color:#64748b;margin-top:4px}
+
+@media(max-width:768px){.profile-layout{grid-template-columns:1fr}.form-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<header>
+<div class="header-wrap">
+<a href="/" class="logo"><i class="fas fa-book-open"></i>BookStore</a>
+<div class="header-actions">
+<a href="/pages/store.html"><i class="fas fa-store"></i> Cửa hàng</a>
+<a href="/pages/my-cart.html"><i class="fas fa-shopping-cart"></i> Giỏ hàng</a>
+<a href="/pages/my-orders.html"><i class="fas fa-box"></i> Đơn hàng</a>
+</div>
+</div>
+</header>
+
+<div class="profile-layout">
+<!-- Sidebar -->
+<aside class="profile-sidebar">
+<div class="avatar-section">
+<div class="avatar" id="avatarInit">?</div>
+<div class="avatar-name" id="avName">...</div>
+<div class="avatar-email" id="avEmail">...</div>
+<span class="avatar-role" id="avRole">...</span>
+</div>
+<ul class="profile-nav">
+<li><a href="#" class="active" onclick="showSection('info')"><i class="fas fa-user"></i> Thông tin cá nhân</a></li>
+<li><a href="#" onclick="showSection('address')"><i class="fas fa-location-dot"></i> Địa chỉ</a></li>
+<li><a href="#" onclick="showSection('security')"><i class="fas fa-shield-halved"></i> Bảo mật</a></li>
+<li><a href="/pages/my-orders.html"><i class="fas fa-box"></i> Đơn hàng</a></li>
+<li><a href="/" onclick="localStorage.clear()" style="color:#dc2626"><i class="fas fa-right-from-bracket"></i> Đăng xuất</a></li>
+</ul>
+</aside>
+
+<!-- Content -->
+<main class="profile-content">
+<div id="msgSuccess" class="success-msg"><i class="fas fa-check-circle"></i> <span></span></div>
+<div id="msgError" class="error-msg"><i class="fas fa-exclamation-circle"></i> <span></span></div>
+
+<!-- Stats -->
+<div class="stats-grid">
+<div class="stat-card"><div class="num" id="statOrders">-</div><div class="lbl">Đơn hàng</div></div>
+<div class="stat-card"><div class="num" id="statSpent">-</div><div class="lbl">Tổng chi tiêu</div></div>
+<div class="stat-card"><div class="num" id="statJoined">-</div><div class="lbl">Ngày tham gia</div></div>
+</div>
+
+<!-- Personal Info -->
+<div class="profile-card" id="secInfo">
+<h2><i class="fas fa-user-circle"></i> Thông tin cá nhân</h2>
+<div class="form-grid">
+<div class="form-group"><label>Họ tên</label><input id="fName" placeholder="Nguyễn Văn A"></div>
+<div class="form-group"><label>Email</label><input id="fEmail" type="email" disabled></div>
+<div class="form-group"><label>Số điện thoại</label><input id="fPhone" placeholder="0901234567"></div>
+<div class="form-group"><label>Nghề nghiệp</label><input id="fJob" placeholder="Kỹ sư phần mềm"></div>
+</div>
+<div class="btn-row"><button class="btn-save" onclick="saveProfile()"><i class="fas fa-save"></i> Lưu thay đổi</button></div>
+</div>
+
+<!-- Address -->
+<div class="profile-card" id="secAddress" style="display:none">
+<h2><i class="fas fa-location-dot"></i> Địa chỉ giao hàng</h2>
+<div class="form-grid">
+<div class="form-group full"><label>Số nhà, đường</label><input id="fStreet" placeholder="123 Nguyễn Huệ"></div>
+<div class="form-group"><label>Thành phố</label><input id="fCity" placeholder="TP. Hồ Chí Minh"></div>
+<div class="form-group"><label>Tỉnh/Bang</label><input id="fState" placeholder="Hồ Chí Minh"></div>
+<div class="form-group"><label>Mã bưu điện</label><input id="fZip" placeholder="700000"></div>
+</div>
+<div class="btn-row"><button class="btn-save" onclick="saveProfile()"><i class="fas fa-save"></i> Lưu địa chỉ</button></div>
+</div>
+
+<!-- Security -->
+<div class="profile-card" id="secSecurity" style="display:none">
+<h2><i class="fas fa-shield-halved"></i> Đổi mật khẩu</h2>
+<div class="form-grid">
+<div class="form-group full"><label>Mật khẩu hiện tại</label><input id="fOldPass" type="password" placeholder="••••••••"></div>
+<div class="form-group"><label>Mật khẩu mới</label><input id="fNewPass" type="password" placeholder="••••••••"></div>
+<div class="form-group"><label>Xác nhận mật khẩu</label><input id="fConfirmPass" type="password" placeholder="••••••••"></div>
+</div>
+<div class="btn-row"><button class="btn-save" onclick="changePassword()"><i class="fas fa-key"></i> Đổi mật khẩu</button></div>
+</div>
+</main>
+</div>
+
+<script>
+const API='/api',AUTH_API='/auth',token=localStorage.getItem('access_token'),userStr=localStorage.getItem('user');
+let currentUser=null,customerData=null,customerId=localStorage.getItem('customer_id');
+function authFetch(url,o={}){if(token){o.headers={...(o.headers||{}),'Authorization':'Bearer '+token}}return fetch(url,o)}
+if(token&&userStr){try{currentUser=JSON.parse(userStr)}catch(e){}}
+if(!currentUser){location.href='/pages/login.html'}
+
+function showSection(name){
+    ['info','address','security'].forEach(s=>document.getElementById('sec'+s.charAt(0).toUpperCase()+s.slice(1)).style.display=s===name?'block':'none');
+    document.querySelectorAll('.profile-nav a').forEach(a=>{a.classList.remove('active');if(a.textContent.includes(name==='info'?'Thông tin':name==='address'?'Địa chỉ':'Bảo mật'))a.classList.add('active')});
+}
+
+function showMsg(type,text){
+    const el=document.getElementById(type==='success'?'msgSuccess':'msgError');
+    el.querySelector('span').textContent=text;el.style.display='block';
+    setTimeout(()=>el.style.display='none',4000);
+}
+
+// Load user info
+(function(){
+    if(!currentUser)return;
+    document.getElementById('avatarInit').textContent=(currentUser.full_name||currentUser.username||'?')[0].toUpperCase();
+    document.getElementById('avName').textContent=currentUser.full_name||currentUser.username;
+    document.getElementById('avEmail').textContent=currentUser.email;
+    const role=currentUser.role||'customer';
+    document.getElementById('avRole').textContent=role;
+    document.getElementById('avRole').className='avatar-role role-'+role;
+    document.getElementById('fEmail').value=currentUser.email||'';
+})();
+
+async function loadCustomer(){
+    if(customerId){
+        try{
+            const r=await authFetch(API+'/customers/'+customerId+'/');
+            if(r.ok){customerData=await r.json();fillForm()}
+            else{customerId=null;localStorage.removeItem('customer_id');await findOrCreateCustomer()}
+        }catch(e){await findOrCreateCustomer()}
+    }else{await findOrCreateCustomer()}
+}
+
+async function findOrCreateCustomer(){
+    try{
+        const r=await authFetch(API+'/customers/');
+        if(!r.ok)return;
+        const d=await r.json();const list=Array.isArray(d)?d:(d.results||[]);
+        const match=list.find(c=>c.email===currentUser.email);
+        if(match){customerData=match;customerId=match.id;localStorage.setItem('customer_id',match.id);fillForm()}
+        else{
+            const cr=await authFetch(API+'/customers/',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({full_name:currentUser.full_name||currentUser.username||'',email:currentUser.email})});
+            if(cr.ok){customerData=await cr.json();customerId=customerData.id;localStorage.setItem('customer_id',customerData.id);fillForm()}
+        }
+    }catch(e){}
+}
+
+function fillForm(){
+    if(!customerData)return;
+    document.getElementById('fName').value=customerData.full_name||'';
+    document.getElementById('fPhone').value=customerData.phone||'';
+    document.getElementById('fJob').value=customerData.job||'';
+    document.getElementById('fStreet').value=customerData.street||'';
+    document.getElementById('fCity').value=customerData.city||'';
+    document.getElementById('fState').value=customerData.state||'';
+    document.getElementById('fZip').value=customerData.zip_code||'';
+    if(customerData.created_at)document.getElementById('statJoined').textContent=new Date(customerData.created_at).toLocaleDateString('vi-VN');
+}
+
+async function saveProfile(){
+    if(!customerId){showMsg('error','Không tìm thấy hồ sơ');return}
+    const data={
+        full_name:document.getElementById('fName').value,
+        phone:document.getElementById('fPhone').value,
+        job:document.getElementById('fJob').value,
+        street:document.getElementById('fStreet').value,
+        city:document.getElementById('fCity').value,
+        state:document.getElementById('fState').value,
+        zip_code:document.getElementById('fZip').value
+    };
+    try{
+        const r=await authFetch(API+'/customers/'+customerId+'/update-info/',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+        if(r.ok){customerData=await r.json();fillForm();showMsg('success','Cập nhật thành công!')}
+        else{const d=await r.json();showMsg('error',JSON.stringify(d))}
+    }catch(e){showMsg('error','Lỗi kết nối')}
+}
+
+async function changePassword(){
+    const oldP=document.getElementById('fOldPass').value;
+    const newP=document.getElementById('fNewPass').value;
+    const confP=document.getElementById('fConfirmPass').value;
+    if(!oldP||!newP){showMsg('error','Vui lòng điền đầy đủ');return}
+    if(newP!==confP){showMsg('error','Mật khẩu xác nhận không khớp');return}
+    if(newP.length<6){showMsg('error','Mật khẩu phải ít nhất 6 ký tự');return}
+    try{
+        const r=await authFetch(AUTH_API+'/change-password/',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({old_password:oldP,new_password:newP})});
+        if(r.ok){showMsg('success','Đổi mật khẩu thành công!');document.getElementById('fOldPass').value='';document.getElementById('fNewPass').value='';document.getElementById('fConfirmPass').value=''}
+        else{const d=await r.json();showMsg('error',d.error||JSON.stringify(d))}
+    }catch(e){showMsg('error','Lỗi kết nối')}
+}
+
+async function loadStats(){
+    const cid=localStorage.getItem('customer_id');if(!cid)return;
+    try{
+        const r=await authFetch(API+'/orders/');if(!r.ok)return;
+        const d=await r.json();const orders=(Array.isArray(d)?d:(d.results||[])).filter(o=>o.customer_id==cid);
+        document.getElementById('statOrders').textContent=orders.length;
+        document.getElementById('statSpent').textContent='$'+orders.reduce((s,o)=>s+parseFloat(o.total_amount||0),0).toFixed(0);
+    }catch(e){}
+}
+
+loadCustomer();
+loadStats();
+</script>
+</body>
+</html>

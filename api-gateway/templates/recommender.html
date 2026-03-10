@@ -1,118 +1,144 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BookStore - Recommender AI</title>
-    <style>
-        *{margin:0;padding:0;box-sizing:border-box}
-        body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background:#f4f6f9;color:#333}
-        .navbar{background:#2c3e50;color:#fff;padding:15px 30px;display:flex;justify-content:space-between;align-items:center}
-        .navbar h1{font-size:24px}.nav-links a{color:#fff;text-decoration:none;margin-left:20px;font-size:16px}
-        .nav-links a:hover{text-decoration:underline}
-        .container{max-width:1100px;margin:30px auto;padding:0 20px}
-        h2{margin-bottom:20px}
-        .card{background:#fff;padding:20px;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.1);margin-bottom:20px}
-        .card h3{margin-bottom:15px}
-        .form-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px}
-        .form-row input,.form-row select{flex:1;padding:10px;border:1px solid #ddd;border-radius:6px;font-size:14px;min-width:120px}
-        .btn{padding:10px 20px;border:none;border-radius:6px;cursor:pointer;font-size:14px;font-weight:bold}
-        .btn-primary{background:#3498db;color:#fff}.btn-primary:hover{background:#2980b9}
-        .btn-success{background:#27ae60;color:#fff}.btn-success:hover{background:#219a52}
-        .btn-danger{background:#e74c3c;color:#fff}.btn-danger:hover{background:#c0392b}
-        .btn-sm{padding:6px 12px;font-size:12px}
-        .reco-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:15px;margin-top:20px}
-        .reco-card{background:#fff;padding:20px;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.1);text-align:center}
-        .reco-card h4{margin-bottom:8px;color:#2c3e50}.reco-card p{color:#666;font-size:14px}
-        .reco-card .price{color:#27ae60;font-size:18px;font-weight:bold;margin-top:8px}
-        table{width:100%;border-collapse:collapse;background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.1)}
-        th,td{padding:12px 15px;text-align:left;border-bottom:1px solid #eee}
-        th{background:#2c3e50;color:#fff}tr:hover{background:#f8f9fa}
-        .msg{padding:10px 15px;border-radius:6px;margin-bottom:15px;display:none}
-        .msg.ok{background:#d4edda;color:#155724;display:block}
-        .msg.err{background:#f8d7da;color:#721c24;display:block}
-    </style>
-</head>
+<html lang="vi">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Gợi ý AI - BookStore Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Inter',sans-serif;background:#f1f5f9;color:#1e293b;display:flex;min-height:100vh}a{text-decoration:none;color:inherit}
+.sidebar{width:260px;background:#0f172a;color:#94a3b8;display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100}
+.sidebar-brand{padding:20px 24px;display:flex;align-items:center;gap:10px;font-size:20px;font-weight:800;color:#fff;border-bottom:1px solid #1e293b}.sidebar-brand i{color:#3b82f6}
+.sidebar-menu{flex:1;padding:16px 12px;overflow-y:auto}
+.menu-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;padding:16px 12px 8px;color:#475569}
+.menu-item{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;font-size:14px;color:#94a3b8;transition:all .2s;margin-bottom:2px}
+.menu-item:hover{background:#1e293b;color:#e2e8f0}.menu-item.active{background:#1d4ed8;color:#fff}.menu-item i{width:20px;text-align:center}
+.sidebar-footer{padding:16px;border-top:1px solid #1e293b}
+.user-card{display:flex;align-items:center;gap:10px;padding:8px}
+.user-avatar{width:36px;height:36px;border-radius:8px;background:#3b82f6;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:14px}
+.user-info .name{font-size:13px;font-weight:600;color:#e2e8f0}.user-info .role{font-size:11px;color:#64748b}
+.main{flex:1;margin-left:260px}
+.topbar{background:#fff;padding:16px 28px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 1px 3px rgba(0,0,0,.06);position:sticky;top:0;z-index:50}
+.topbar h1{font-size:20px;font-weight:700;display:flex;align-items:center;gap:8px}.topbar h1 i{color:#2563eb}
+.topbar-actions{display:flex;gap:12px;align-items:center}
+.topbar-actions a,.topbar-actions button{background:none;border:none;color:#64748b;font-size:14px;cursor:pointer;display:flex;align-items:center;gap:6px;font-family:inherit}
+.btn-store{background:#eff6ff!important;color:#2563eb!important;padding:8px 16px;border-radius:8px;font-weight:600}
+.content{padding:28px}
+.card{background:#fff;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,.06);margin-bottom:24px}
+.card-header{padding:20px 24px;border-bottom:1px solid #f1f5f9;display:flex;align-items:center;justify-content:space-between}
+.card-header h3{font-size:16px;font-weight:700;display:flex;align-items:center;gap:8px}
+.card-body{padding:24px}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+.form-grid input,.form-grid select,.form-grid textarea{padding:10px 14px;border:2px solid #e2e8f0;border-radius:8px;font-size:14px;font-family:inherit}
+.form-grid input:focus,.form-grid select:focus,.form-grid textarea:focus{outline:none;border-color:#2563eb}
+.btn{padding:10px 20px;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600;font-family:inherit;display:inline-flex;align-items:center;gap:6px;transition:all .2s}
+.btn-primary{background:#2563eb;color:#fff}.btn-primary:hover{background:#1d4ed8}
+.btn-danger{background:#ef4444;color:#fff}.btn-danger:hover{background:#dc2626}
+.btn-success{background:#16a34a;color:#fff}.btn-success:hover{background:#15803d}
+.btn-warning{background:#f59e0b;color:#fff}.btn-warning:hover{background:#d97706}
+.btn-info{background:#0ea5e9;color:#fff}.btn-info:hover{background:#0284c7}
+.btn-secondary{background:#64748b;color:#fff}.btn-secondary:hover{background:#475569}
+.btn-sm{padding:6px 12px;font-size:12px}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;padding:12px 20px;font-size:12px;font-weight:700;color:#64748b;text-transform:uppercase;background:#f8fafc}
+td{padding:12px 20px;font-size:14px;border-bottom:1px solid #f8fafc}
+tr:hover td{background:#f8fafc}
+.badge{display:inline-block;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:600}
+.badge-pending{background:#fef3c7;color:#92400e}
+.badge-paid,.badge-completed{background:#dcfce7;color:#166534}
+.badge-shipped,.badge-in_transit{background:#dbeafe;color:#1e40af}
+.badge-delivered{background:#d1fae5;color:#065f46}
+.badge-cancelled,.badge-failed{background:#fee2e2;color:#991b1b}
+.badge-preparing{background:#fef3c7;color:#92400e}
+.msg{padding:12px 16px;border-radius:8px;margin-bottom:16px;display:none;font-size:14px}
+.msg.ok{background:#dcfce7;color:#166534;display:block}.msg.err{background:#fee2e2;color:#991b1b;display:block}
+.reco-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;margin-bottom:24px}
+.reco-card{background:#fff;padding:20px;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,.06);text-align:center;transition:all .2s}
+.reco-card:hover{box-shadow:0 4px 12px rgba(0,0,0,.1);transform:translateY(-2px)}
+.reco-card h4{margin-bottom:6px;font-size:15px}.reco-card .author{color:#64748b;font-size:13px}
+.reco-card .price{color:#16a34a;font-size:18px;font-weight:700;margin-top:8px}
+.reco-card .stock{font-size:12px;color:#94a3b8;margin-top:4px}
+</style></head>
 <body>
-    <nav class="navbar">
-        <h1>📚 BookStore</h1>
-        <div class="nav-links">
-            <a href="/">Home</a>
-            <a href="/pages/books.html">Books</a>
-            <a href="/pages/cart.html">Cart</a>
-            <a href="/pages/customers.html">Customers</a>
-            <a href="/pages/orders.html">Orders</a>
-        </div>
-    </nav>
-    <div class="container">
-        <h2>🤖 Recommender AI</h2>
-        <div id="msg" class="msg"></div>
-
-        <div class="card">
-            <h3>Get Book Recommendations</h3>
-            <p style="color:#666;margin-bottom:15px">AI-powered random book recommendations from our catalog</p>
-            <button class="btn btn-success" onclick="getRecommendations()">🎲 Get Recommendations</button>
-        </div>
-        <div id="recoArea" class="reco-grid"></div>
-
-        <h2 style="margin-top:30px">📋 Saved Recommendations</h2>
-        <div class="card" style="margin-top:15px">
-            <h3>Save Recommendation</h3>
-            <div class="form-row">
-                <input type="number" id="customer_id" placeholder="Customer ID">
-                <input type="number" id="book_id" placeholder="Book ID">
-                <input type="number" id="score" placeholder="Score (0.0 - 1.0)" step="0.1" min="0" max="1">
-            </div>
-            <button class="btn btn-primary" onclick="addItem()">Save Recommendation</button>
-        </div>
-        <table>
-            <thead><tr><th>ID</th><th>Customer</th><th>Book</th><th>Score</th><th>Created</th><th>Actions</th></tr></thead>
-            <tbody id="tbl"><tr><td colspan="6">Loading...</td></tr></tbody>
-        </table>
-    </div>
+<aside class="sidebar">
+<div class="sidebar-brand"><i class="fas fa-book-open"></i> BookStore</div>
+<nav class="sidebar-menu">
+<div class="menu-label">Tổng quan</div>
+<a class="menu-item" href="/pages/admin.html"><i class="fas fa-gauge-high"></i> Dashboard</a>
+<div class="menu-label">Quản lý</div>
+<a class="menu-item" href="/pages/books.html"><i class="fas fa-book"></i> Sách</a>
+<a class="menu-item" href="/pages/catalogs.html"><i class="fas fa-layer-group"></i> Danh mục</a>
+<a class="menu-item" href="/pages/customers.html"><i class="fas fa-users"></i> Khách hàng</a>
+<a class="menu-item" href="/pages/orders.html"><i class="fas fa-box"></i> Đơn hàng</a>
+<a class="menu-item" href="/pages/cart.html"><i class="fas fa-shopping-cart"></i> Giỏ hàng</a>
+<div class="menu-label">Tài chính & Vận chuyển</div>
+<a class="menu-item" href="/pages/payments.html"><i class="fas fa-credit-card"></i> Thanh toán</a>
+<a class="menu-item" href="/pages/shipments.html"><i class="fas fa-truck"></i> Vận chuyển</a>
+<div class="menu-label">Nội dung</div>
+<a class="menu-item" href="/pages/comments.html"><i class="fas fa-comments"></i> Bình luận</a>
+<a class="menu-item active" href="/pages/recommender.html"><i class="fas fa-robot"></i> Gợi ý AI</a>
+<div class="menu-label">Nhân sự</div>
+<a class="menu-item" href="/pages/staffs.html"><i class="fas fa-user-tie"></i> Nhân viên</a>
+<a class="menu-item" href="/pages/managers.html"><i class="fas fa-user-shield"></i> Quản lý</a>
+</nav>
+<div class="sidebar-footer"><div class="user-card">
+<div class="user-avatar" id="sideAvatar">A</div>
+<div class="user-info"><div class="name" id="sideName">Admin</div><div class="role" id="sideRole">admin</div></div>
+</div></div>
+</aside>
+<div class="main">
+<div class="topbar"><h1><i class="fas fa-robot"></i> Gợi ý AI</h1>
+<div class="topbar-actions"><a href="/" class="btn-store"><i class="fas fa-store"></i> Cửa hàng</a>
+<button onclick="logout()"><i class="fas fa-sign-out-alt"></i> Đăng xuất</button></div></div>
+<div class="content"><div id="msg" class="msg"></div>
+<div class="card">
+<div class="card-header"><h3><i class="fas fa-magic"></i> Gợi ý sách bằng AI</h3></div>
+<div class="card-body"><p style="color:#64748b;margin-bottom:16px">Hệ thống AI sẽ gợi ý các sách ngẫu nhiên từ kho sách</p>
+<button class="btn btn-success" onclick="getRecommendations()"><i class="fas fa-dice"></i> Lấy gợi ý</button>
+</div></div>
+<div id="recoArea" class="reco-grid"></div>
+<div class="card"><div class="card-header"><h3><i class="fas fa-plus-circle"></i> Lưu gợi ý</h3></div>
+<div class="card-body"><div class="form-grid">
+<input type="number" id="customer_id" placeholder="Customer ID">
+<input type="number" id="book_id" placeholder="Book ID">
+<input type="number" id="score" placeholder="Điểm (0.0 - 1.0)" step="0.1" min="0" max="1">
+</div><button class="btn btn-primary" style="margin-top:16px" onclick="addItem()"><i class="fas fa-save"></i> Lưu</button>
+</div></div>
+<div class="card"><div class="card-header"><h3><i class="fas fa-list"></i> Gợi ý đã lưu</h3></div>
+<table><thead><tr><th>ID</th><th>Khách hàng</th><th>Sách</th><th>Điểm</th><th>Ngày tạo</th><th>Thao tác</th></tr></thead>
+<tbody id="tbl"><tr><td colspan="6">Đang tải...</td></tr></tbody></table></div>
+</div></div>
 <script>
-const API='/api';
 const TOKEN=localStorage.getItem('access_token');
 if(!TOKEN)window.location.href='/pages/login.html';
 const _fetch=window.fetch;window.fetch=(url,opts={})=>{opts.headers={...(opts.headers||{}),'Authorization':'Bearer '+TOKEN};return _fetch(url,opts)};
 function showMsg(t,ok){const e=document.getElementById('msg');e.textContent=t;e.className='msg '+(ok?'ok':'err');setTimeout(()=>e.className='msg',3000)}
+function logout(){localStorage.clear();window.location.href='/pages/login.html'}
+try{const u=JSON.parse(localStorage.getItem('user')||'{}');document.getElementById('sideName').textContent=u.full_name||u.username||'Admin';document.getElementById('sideRole').textContent=u.role||'admin';
+document.getElementById('sideAvatar').textContent=(u.full_name||u.username||'A')[0].toUpperCase();
+if(!['admin','manager','staff'].includes(u.role))window.location.href='/';}catch(e){}
+
+const API='/api';
 async function getRecommendations(){
-    try{
-        const r=await fetch(API+'/recommend/');const d=await r.json();
-        const books=d.recommended_books||[];
-        const area=document.getElementById('recoArea');
-        if(!books.length){area.innerHTML='<p>No books in catalog yet. Add some books first!</p>';return}
-        area.innerHTML=books.map(b=>`<div class="reco-card">
-            <h4>📖 ${b.title}</h4>
-            <p>by ${b.author}</p>
-            <p class="price">$${parseFloat(b.price).toFixed(2)}</p>
-            <p style="color:#999;font-size:12px;margin-top:5px">Stock: ${b.stock}</p>
-        </div>`).join('');
-    }catch(e){showMsg('Error getting recommendations: '+e.message,false)}
-}
+try{const r=await fetch(API+'/recommend/');const d=await r.json();
+const books=d.recommended_books||[];const area=document.getElementById('recoArea');
+if(!books.length){area.innerHTML='<div class="card"><div class="card-body">Chưa có sách trong kho. Hãy thêm sách trước!</div></div>';return}
+area.innerHTML=books.map(b=>`<div class="reco-card"><h4>${b.title}</h4><div class="author">${b.author}</div>
+<div class="price">$${parseFloat(b.price).toFixed(2)}</div><div class="stock">Kho: ${b.stock}</div></div>`).join('');
+}catch(e){showMsg('Lỗi: '+e.message,false)}}
 async function load(){
-    try{
-        const r=await fetch(API+'/recommendations/');const d=await r.json();
-        const items=Array.isArray(d)?d:(d.results||[]);
-        const tb=document.getElementById('tbl');
-        if(!items.length){tb.innerHTML='<tr><td colspan="6">No saved recommendations yet</td></tr>';return}
-        tb.innerHTML=items.map(rc=>`<tr>
-            <td>${rc.id}</td><td>#${rc.customer_id}</td><td>#${rc.book_id}</td>
-            <td>${rc.score.toFixed(2)}</td>
-            <td>${new Date(rc.created_at).toLocaleDateString()}</td>
-            <td><button class="btn btn-danger btn-sm" onclick="del(${rc.id})">🗑</button></td>
-            </tr>`).join('');
-    }catch(e){document.getElementById('tbl').innerHTML='<tr><td colspan="6">Error loading</td></tr>'}
-}
-async function addItem(){
-    const data={customer_id:document.getElementById('customer_id').value,book_id:document.getElementById('book_id').value,score:parseFloat(document.getElementById('score').value)||0};
-    if(!data.customer_id||!data.book_id){showMsg('Customer ID and Book ID required',false);return}
-    const r=await fetch(API+'/recommendations/',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
-    if(r.ok){showMsg('Recommendation saved!',true);['customer_id','book_id','score'].forEach(id=>document.getElementById(id).value='');load()}
-    else{const e=await r.json();showMsg(JSON.stringify(e),false)}
-}
-async function del(id){if(!confirm('Delete recommendation #'+id+'?'))return;await fetch(API+'/recommendations/'+id+'/',{method:'DELETE'});load()}
+try{const r=await fetch(API+'/recommendations/');const d=await r.json();
+const items=Array.isArray(d)?d:(d.results||[]);const tb=document.getElementById('tbl');
+if(!items.length){tb.innerHTML='<tr><td colspan="6">Chưa có gợi ý</td></tr>';return}
+tb.innerHTML=items.map(rc=>`<tr><td>${rc.id}</td><td>#${rc.customer_id}</td><td>#${rc.book_id}</td>
+<td><strong>${rc.score.toFixed(2)}</strong></td>
+<td>${new Date(rc.created_at).toLocaleDateString('vi-VN')}</td>
+<td><button class="btn btn-danger btn-sm" onclick="del(${rc.id})"><i class="fas fa-trash"></i></button></td></tr>`).join('');
+}catch(e){document.getElementById('tbl').innerHTML='<tr><td colspan="6">Lỗi tải dữ liệu</td></tr>'}}
+async function addItem(){const data={customer_id:document.getElementById('customer_id').value,book_id:document.getElementById('book_id').value,score:parseFloat(document.getElementById('score').value)||0};
+if(!data.customer_id||!data.book_id){showMsg('Customer ID và Book ID là bắt buộc',false);return}
+const r=await fetch(API+'/recommendations/',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+if(r.ok){showMsg('Lưu gợi ý thành công!',true);['customer_id','book_id','score'].forEach(id=>document.getElementById(id).value='');load()}
+else{const e=await r.json();showMsg(JSON.stringify(e),false)}}
+async function del(id){if(!confirm('Xóa gợi ý #'+id+'?'))return;await fetch(API+'/recommendations/'+id+'/',{method:'DELETE'});showMsg('Đã xóa',true);load()}
 load();
-</script>
-</body>
-</html>
+</script></body></html>

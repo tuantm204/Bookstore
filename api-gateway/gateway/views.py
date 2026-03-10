@@ -80,6 +80,34 @@ def register_page(request):
     return render(request, 'register.html')
 
 
+def store_page(request):
+    return render(request, 'store.html')
+
+
+def book_detail_page(request):
+    return render(request, 'book_detail.html')
+
+
+def my_cart_page(request):
+    return render(request, 'my_cart.html')
+
+
+def my_orders_page(request):
+    return render(request, 'my_orders.html')
+
+
+def my_profile_page(request):
+    return render(request, 'my_profile.html')
+
+
+def checkout_page(request):
+    return render(request, 'checkout.html')
+
+
+def admin_page(request):
+    return render(request, 'admin_dashboard.html')
+
+
 @api_view(['GET', 'POST', 'PUT', 'PATCH', 'DELETE'])
 def auth_proxy(request, path=''):
     """Proxy requests to auth-service."""

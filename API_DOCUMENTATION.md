@@ -3,13 +3,14 @@
 > **Base URL:** `http://localhost:8000/api`
 >
 > Tất cả request đều đi qua **API Gateway** (port 8000), gateway sẽ proxy tới service tương ứng.
+> Tất cả API endpoints (trừ Auth login/register/refresh) đều yêu cầu **JWT Bearer Token** trong header.
 
 ---
 
 ## 📐 Kiến trúc tổng quan
 
 ```
-Client  →  API Gateway (:8000)  →  Microservices (:8001-8011)  →  MySQL (:3306)
+Client  →  API Gateway (:8000)  →  JWT Middleware  →  Microservices (:8001-8012)  →  MySQL (:3306)
 ```
 
 | Service | Port | Database | Prefix API |
@@ -25,39 +26,244 @@ Client  →  API Gateway (:8000)  →  Microservices (:8001-8011)  →  MySQL (:
 | Ship Service | 8009 | ship_db | `/api/shipments/` |
 | Comment & Rate Service | 8010 | comment_db | `/api/comments/` |
 | Recommender AI Service | 8011 | recommend_db | `/api/recommendations/`, `/api/recommend/` |
+| **Auth Service** | **8012** | **auth_db** | **`/api/auth/`** |
+
+---
+
+## 🔐 Authentication (JWT)
+
+Hệ thống sử dụng **JWT (JSON Web Token)** với thuật toán **HS256** để xác thực và phân quyền.
+
+### Authentication Flow
+
+```
+1. Client gửi POST /api/auth/login/ {username, password}
+2. Auth Service xác thực → Trả về {access_token, refresh_token}
+3. Client lưu tokens vào localStorage
+4. Mọi API request gửi kèm header: Authorization: Bearer <access_token>
+5. JWT Middleware tại Gateway:
+   a) Decode token (HS256, secret key)
+   b) Kiểm tra token type = 'access' và chưa hết hạn
+   c) Kiểm tra role có đủ quyền cho endpoint + HTTP method
+   d) Nếu OK → proxy request đến backend service
+   e) Nếu FAIL → trả 401 (Unauthorized) hoặc 403 (Forbidden)
+6. Khi access_token hết hạn → POST /api/auth/refresh/ với refresh_token
+```
+
+### Vai trò & Phân quyền (RBAC)
+
+| Role | Quyền hạn |
+|------|-----------|
+| **admin** | Toàn quyền trên mọi resource, quản lý users, gán vai trò |
+| **manager** | Đọc/ghi hầu hết resources, xem users, không gán vai trò |
+| **staff** | Đọc/ghi sách, đơn hàng, khách hàng; không quản lý managers |
+| **customer** | Đọc sách/catalog, tạo đơn hàng, bình luận, xem thông tin cá nhân |
+
+### Ma trận phân quyền chi tiết
+
+| Resource | Admin | Manager | Staff | Customer |
+|----------|-------|---------|-------|----------|
+| Auth Users (GET) | ✅ | ✅ | ❌ | ❌ |
+| Assign Role | ✅ | ❌ | ❌ | ❌ |
+| Staffs (CRUD) | ✅ Full | ✅ R/W | ✅ Read | ❌ |
+| Managers (CRUD) | ✅ Full | ✅ Read | ❌ | ❌ |
+| Books (CRUD) | ✅ Full | ✅ R/W/Del | ✅ R/W | ✅ Read |
+| Catalogs (CRUD) | ✅ Full | ✅ R/W/Del | ✅ R/W | ✅ Read |
+| Customers (CRUD) | ✅ Full | ✅ R/W/Del | ✅ R/W | ✅ R/W |
+| Orders (CRUD) | ✅ Full | ✅ R/W | ✅ R/W | ✅ Read/Create |
+| Payments | ✅ Full | ✅ R/W | ✅ R/W | ✅ Read/Create |
+| Comments (CRUD) | ✅ Full | ✅ Full | ✅ Full | ✅ Full |
+
+### Tài khoản mặc định (Seed Accounts)
+
+| Username | Password | Role |
+|----------|----------|------|
+| admin | admin123 | admin |
+| staff1 | staff123 | staff |
+| staff2 | staff123 | staff |
+| manager1 | manager123 | manager |
+| manager2 | manager123 | manager |
 
 ---
 
 ## 🔗 Giao tiếp giữa các Services (Inter-service Communication)
 
 ```
-Customer Service  ──POST /carts/──►  Cart Service      (Tự tạo giỏ hàng khi tạo customer)
-Order Service     ──GET /carts/───►  Cart Service      (Lấy items trong giỏ hàng)
-Order Service     ──GET /books/───►  Book Service      (Lấy giá sách)
-Order Service     ──POST /payments/► Pay Service       (Tạo thanh toán tự động)
-Order Service     ──POST /shipments/► Ship Service     (Tạo vận chuyển tự động)
-Cart Item         ──GET /books/───►  Book Service      (Kiểm tra sách tồn tại)
-Recommender AI    ──GET /books/───►  Book Service      (Lấy danh sách sách để gợi ý)
+Gateway           ──JWT verify──────►  Auth Service       (Xác thực token mỗi request)
+Customer Service  ──POST /carts/────►  Cart Service       (Tự tạo giỏ hàng khi tạo customer)
+Order Service     ──GET /carts/─────►  Cart Service       (Lấy items trong giỏ hàng)
+Order Service     ──GET /books/─────►  Book Service       (Lấy giá sách)
+Order Service     ──POST /payments/─►  Pay Service        (Tạo thanh toán tự động)
+Order Service     ──POST /shipments/►  Ship Service       (Tạo vận chuyển tự động)
+Cart Item         ──GET /books/─────►  Book Service       (Kiểm tra sách tồn tại)
+Recommender AI    ──GET /books/─────►  Book Service       (Lấy danh sách sách để gợi ý)
+```
+
+---
+
+## 0. 🔐 Auth Service
+
+### User Model
+| Field | Type | Required | Note |
+|-------|------|----------|------|
+| username | string | ✅ | max 150, unique |
+| email | string | ✅ | unique |
+| password | string | ✅ | Hashed SHA-256 + salt |
+| full_name | string | ✅ | max 255 |
+| role | string | ❌ | `admin` / `manager` / `staff` / `customer` (default: customer) |
+| is_active | boolean | ❌ | default: true |
+
+### Endpoints
+
+| Method | URL | Auth | Mô tả |
+|--------|-----|------|--------|
+| POST | `/api/auth/register/` | ❌ | Đăng ký tài khoản mới |
+| POST | `/api/auth/login/` | ❌ | Đăng nhập, trả JWT tokens |
+| POST | `/api/auth/refresh/` | ❌ | Refresh access token |
+| POST | `/api/auth/verify/` | ❌ | Xác thực token hợp lệ |
+| GET | `/api/auth/me/` | ✅ | Thông tin user hiện tại |
+| POST | `/api/auth/change-password/` | ✅ | Đổi mật khẩu |
+| POST | `/api/auth/assign-role/` | ✅ Admin | Gán vai trò cho user |
+| GET | `/api/auth/users/` | ✅ Admin/Manager | Danh sách tất cả users |
+| POST | `/api/auth/users/{id}/deactivate/` | ✅ Admin | Vô hiệu hóa user |
+| POST | `/api/auth/users/{id}/reset-password/` | ✅ Admin | Reset mật khẩu user |
+
+### Đăng ký
+```
+POST /api/auth/register/
+Content-Type: application/json
+```
+**Body:**
+```json
+{
+    "username": "newuser",
+    "email": "newuser@example.com",
+    "password": "securepassword",
+    "full_name": "Nguyen Van A"
+}
+```
+**Response:** `201 Created`
+```json
+{
+    "message": "Registration successful",
+    "user": {
+        "id": 6,
+        "username": "newuser",
+        "email": "newuser@example.com",
+        "full_name": "Nguyen Van A",
+        "role": "customer",
+        "is_active": true
+    }
+}
+```
+
+### Đăng nhập
+```
+POST /api/auth/login/
+Content-Type: application/json
+```
+**Body:**
+```json
+{
+    "username": "admin",
+    "password": "admin123"
+}
+```
+**Response:** `200 OK`
+```json
+{
+    "message": "Login successful",
+    "user": {
+        "id": 1,
+        "username": "admin",
+        "email": "admin@bookstore.com",
+        "full_name": "Administrator",
+        "role": "admin",
+        "is_active": true
+    },
+    "access_token": "eyJhbGciOiJIUzI1NiIs...",
+    "refresh_token": "eyJhbGciOiJIUzI1NiIs..."
+}
+```
+
+### Refresh Token
+```
+POST /api/auth/refresh/
+Content-Type: application/json
+```
+**Body:**
+```json
+{
+    "refresh_token": "eyJhbGciOiJIUzI1NiIs..."
+}
+```
+**Response:** `200 OK`
+```json
+{
+    "access_token": "eyJhbGciOiJIUzI1NiIs...(new)"
+}
+```
+
+### Gán vai trò (Admin only)
+```
+POST /api/auth/assign-role/
+Authorization: Bearer <admin_access_token>
+Content-Type: application/json
+```
+**Body:**
+```json
+{
+    "user_id": 6,
+    "role": "staff"
+}
 ```
 
 ---
 
 ## 1. 👤 Customer Service
 
+### Fields
+| Field | Type | Required | Note |
+|-------|------|----------|------|
+| full_name | string | ✅ | max 255 |
+| email | string | ✅ | unique |
+| phone | string | ❌ | max 20 |
+| job | string | ❌ | max 255, nghề nghiệp |
+| street | string | ❌ | max 500, địa chỉ đường |
+| city | string | ❌ | max 255, thành phố |
+| state | string | ❌ | max 255, tỉnh/bang |
+| zip_code | string | ❌ | max 20, mã bưu chính |
+
+### Endpoints
+| Method | URL | Mô tả |
+|--------|-----|--------|
+| GET | `/api/customers/` | Danh sách khách hàng |
+| POST | `/api/customers/` | Tạo khách hàng mới |
+| GET | `/api/customers/{id}/` | Chi tiết khách hàng |
+| PUT | `/api/customers/{id}/` | Cập nhật toàn bộ |
+| PATCH | `/api/customers/{id}/` | Cập nhật một phần |
+| DELETE | `/api/customers/{id}/` | Xóa khách hàng |
+
 ### 1.1 Lấy danh sách khách hàng
 ```
 GET /api/customers/
+Authorization: Bearer <access_token>
 ```
 **Response:** `200 OK`
 ```json
 [
     {
         "id": 1,
-        "name": "Nguyen Van A",
+        "full_name": "Nguyen Van A",
         "email": "a@gmail.com",
         "phone": "0901234567",
-        "address": "Ha Noi",
-        "created_at": "2026-03-09T10:00:00Z"
+        "job": "Engineer",
+        "street": "123 Nguyen Hue",
+        "city": "Ho Chi Minh",
+        "state": "HCM",
+        "zip_code": "70000",
+        "created_at": "2026-03-09T10:00:00Z",
+        "updated_at": "2026-03-09T10:00:00Z"
     }
 ]
 ```
@@ -65,44 +271,57 @@ GET /api/customers/
 ### 1.2 Tạo khách hàng mới
 ```
 POST /api/customers/
+Authorization: Bearer <access_token>
 Content-Type: application/json
 ```
 **Body:**
 ```json
 {
-    "name": "Nguyen Van A",
+    "full_name": "Nguyen Van A",
     "email": "a@gmail.com",
     "phone": "0901234567",
-    "address": "Ha Noi"
+    "job": "Engineer",
+    "street": "123 Nguyen Hue",
+    "city": "Ho Chi Minh",
+    "state": "HCM",
+    "zip_code": "70000"
 }
 ```
 **Response:** `201 Created`
+
 > ⚡ **Side effect:** Tự động tạo Cart cho customer qua Cart Service.
 
 ### 1.3 Xem chi tiết khách hàng
 ```
 GET /api/customers/{id}/
+Authorization: Bearer <access_token>
 ```
 **Response:** `200 OK`
 
 ### 1.4 Cập nhật khách hàng
 ```
 PUT /api/customers/{id}/
+Authorization: Bearer <access_token>
 Content-Type: application/json
 ```
 **Body:** (tất cả fields)
 ```json
 {
-    "name": "Nguyen Van B",
+    "full_name": "Nguyen Van B",
     "email": "b@gmail.com",
     "phone": "0909999999",
-    "address": "HCM"
+    "job": "Designer",
+    "street": "456 Le Loi",
+    "city": "Ha Noi",
+    "state": "HN",
+    "zip_code": "10000"
 }
 ```
 
 ### 1.5 Cập nhật một phần
 ```
 PATCH /api/customers/{id}/
+Authorization: Bearer <access_token>
 Content-Type: application/json
 ```
 **Body:** (chỉ field cần update)
@@ -115,8 +334,11 @@ Content-Type: application/json
 ### 1.6 Xóa khách hàng
 ```
 DELETE /api/customers/{id}/
+Authorization: Bearer <access_token>
 ```
 **Response:** `204 No Content`
+
+> 🔒 **Auth:** Admin full, Manager R/W/Del, Staff R/W, Customer R/W own.
 
 ---
 
@@ -150,6 +372,8 @@ DELETE /api/customers/{id}/
 }
 ```
 
+> 🔒 **Auth:** Admin full access, Manager read/write, Staff read only, Customer no access.
+
 ---
 
 ## 3. 👔 Manager Service
@@ -182,6 +406,8 @@ DELETE /api/customers/{id}/
 }
 ```
 
+> 🔒 **Auth:** Admin full access, Manager read only, Staff/Customer no access.
+
 ---
 
 ## 4. 📂 Catalog Service
@@ -206,9 +432,11 @@ DELETE /api/customers/{id}/
 ```json
 {
     "name": "Fiction",
-    "description": "Sách tiểu thuyết, truyện"
+    "description": "Sach tieu thuyet, truyen"
 }
 ```
+
+> 🔒 **Auth:** Admin/Manager/Staff can create/edit, Customer read only.
 
 ---
 
@@ -221,6 +449,8 @@ DELETE /api/customers/{id}/
 | author | string | ✅ | max 255 |
 | price | decimal | ✅ | max_digits=10, decimal_places=2 |
 | stock | integer | ❌ | default: 0 |
+| catalog_id | integer | ❌ | ID danh muc (cross-service ref, nullable) |
+| image_url | string | ❌ | URL anh bia sach (max 500, default: "") |
 
 ### Endpoints
 | Method | URL | Mô tả |
@@ -238,9 +468,27 @@ DELETE /api/customers/{id}/
     "title": "Dune",
     "author": "Frank Herbert",
     "price": "15.99",
-    "stock": 50
+    "stock": 50,
+    "catalog_id": 1,
+    "image_url": "https://covers.openlibrary.org/b/id/12345-L.jpg"
 }
 ```
+
+**Response:**
+```json
+{
+    "id": 1,
+    "title": "Dune",
+    "author": "Frank Herbert",
+    "price": "15.99",
+    "stock": 50,
+    "catalog_id": 1,
+    "image_url": "https://covers.openlibrary.org/b/id/12345-L.jpg",
+    "created_at": "2026-03-09T10:00:00Z"
+}
+```
+
+> 🔒 **Auth:** Admin/Manager can delete, Admin/Manager/Staff can create/edit, Customer read only.
 
 ---
 
@@ -249,27 +497,27 @@ DELETE /api/customers/{id}/
 ### Cart Fields
 | Field | Type | Required | Note |
 |-------|------|----------|------|
-| customer_id | integer | ✅ | ID khách hàng |
+| customer_id | integer | ✅ | ID khach hang (unique) |
 
 ### CartItem Fields
 | Field | Type | Required | Note |
 |-------|------|----------|------|
 | cart | integer | ✅ | Cart ID (FK) |
-| book_id | integer | ✅ | ID sách (sẽ verify qua Book Service) |
+| book_id | integer | ✅ | ID sach (se verify qua Book Service) |
 | quantity | integer | ❌ | default: 1 |
 
 ### Endpoints
 | Method | URL | Mô tả |
 |--------|-----|--------|
-| GET | `/api/carts/` | Danh sách giỏ hàng |
-| POST | `/api/carts/` | Tạo giỏ hàng |
-| GET | `/api/carts/{id}/` | Chi tiết giỏ (kèm items) |
-| GET | `/api/carts/customer/{customer_id}/` | ⭐ Lấy giỏ hàng theo Customer ID |
-| GET | `/api/cart-items/` | Danh sách cart items |
-| POST | `/api/cart-items/` | Thêm sách vào giỏ |
-| GET | `/api/cart-items/{id}/` | Chi tiết item |
-| PUT | `/api/cart-items/{id}/` | Cập nhật item |
-| DELETE | `/api/cart-items/{id}/` | Xóa item khỏi giỏ |
+| GET | `/api/carts/` | Danh sach gio hang |
+| POST | `/api/carts/` | Tao gio hang |
+| GET | `/api/carts/{id}/` | Chi tiet gio (kem items) |
+| GET | `/api/carts/customer/{customer_id}/` | ⭐ Lay gio hang theo Customer ID |
+| GET | `/api/cart-items/` | Danh sach cart items |
+| POST | `/api/cart-items/` | Them sach vao gio |
+| GET | `/api/cart-items/{id}/` | Chi tiet item |
+| PUT | `/api/cart-items/{id}/` | Cap nhat item |
+| DELETE | `/api/cart-items/{id}/` | Xoa item khoi gio |
 
 **POST Cart Body:**
 ```json
@@ -286,7 +534,7 @@ DELETE /api/customers/{id}/
     "quantity": 2
 }
 ```
-> ⚡ **Validation:** Khi thêm cart-item, service sẽ gọi Book Service kiểm tra sách tồn tại.
+> ⚡ **Validation:** Khi them cart-item, service se goi Book Service kiem tra sach ton tai.
 
 **GET /api/carts/{id}/ Response:**
 ```json
@@ -312,43 +560,42 @@ DELETE /api/customers/{id}/
 ### Order Fields
 | Field | Type | Required | Note |
 |-------|------|----------|------|
-| customer_id | integer | ✅ | ID khách hàng |
-| total_amount | decimal | auto | Tính tự động |
+| customer_id | integer | ✅ | ID khach hang |
+| total_amount | decimal | auto | Tinh tu dong |
 | status | string | auto | pending/paid/shipped/delivered/cancelled |
 
 ### OrderItem Fields
 | Field | Type | Note |
 |-------|------|------|
 | order | integer | Order ID (FK) |
-| book_id | integer | ID sách |
-| quantity | integer | Số lượng |
-| price | decimal | Giá tại thời điểm đặt |
+| book_id | integer | ID sach |
+| quantity | integer | So luong |
+| price | decimal | Gia tai thoi diem dat |
 
 ### Endpoints
 | Method | URL | Mô tả |
 |--------|-----|--------|
-| GET | `/api/orders/` | Danh sách đơn hàng |
-| POST | `/api/orders/` | ⭐ Tạo đơn hàng từ giỏ hàng |
-| GET | `/api/orders/{id}/` | Chi tiết đơn (kèm items) |
-| PUT | `/api/orders/{id}/` | Cập nhật đơn |
-| PATCH | `/api/orders/{id}/` | Cập nhật trạng thái |
-| DELETE | `/api/orders/{id}/` | Xóa đơn |
-| GET | `/api/order-items/` | Danh sách order items |
+| GET | `/api/orders/` | Danh sach don hang |
+| POST | `/api/orders/` | ⭐ Tao don hang tu gio hang |
+| GET | `/api/orders/{id}/` | Chi tiet don (kem items) |
+| PUT | `/api/orders/{id}/` | Cap nhat don |
+| PATCH | `/api/orders/{id}/` | Cap nhat trang thai |
+| DELETE | `/api/orders/{id}/` | Xoa don |
+| GET | `/api/order-items/` | Danh sach order items |
 
 **POST Order Body:**
 ```json
 {
-    "customer_id": 1,
-    "address": "123 Nguyen Hue, HCM"
+    "customer_id": 1
 }
 ```
 
-> ⚡ **Workflow khi tạo Order:**
-> 1. Lấy giỏ hàng của customer từ Cart Service
-> 2. Lấy giá sách từ Book Service cho mỗi item
-> 3. Tính tổng tiền, tạo Order + OrderItems
-> 4. Gọi Pay Service tạo Payment tự động
-> 5. Gọi Ship Service tạo Shipment tự động
+> ⚡ **Workflow khi tao Order:**
+> 1. Lay gio hang cua customer tu Cart Service
+> 2. Lay gia sach tu Book Service cho moi item
+> 3. Tinh tong tien, tao Order + OrderItems
+> 4. Goi Pay Service tao Payment tu dong
+> 5. Goi Ship Service tao Shipment tu dong
 
 **Response:**
 ```json
@@ -370,6 +617,8 @@ DELETE /api/customers/{id}/
 }
 ```
 
+> 🔒 **Auth:** Admin/Manager/Staff full CRUD, Customer can read own orders and create.
+
 ---
 
 ## 8. 💳 Payment Service
@@ -377,20 +626,20 @@ DELETE /api/customers/{id}/
 ### Fields
 | Field | Type | Required | Note |
 |-------|------|----------|------|
-| order_id | integer | ✅ | ID đơn hàng |
-| amount | decimal | ✅ | Số tiền |
+| order_id | integer | ✅ | ID don hang |
+| amount | decimal | ✅ | So tien |
 | method | string | ❌ | `cash` / `credit_card` / `bank_transfer` (default: cash) |
 | status | string | ❌ | `pending` / `completed` / `failed` (default: pending) |
 
 ### Endpoints
 | Method | URL | Mô tả |
 |--------|-----|--------|
-| GET | `/api/payments/` | Danh sách thanh toán |
-| POST | `/api/payments/` | Tạo thanh toán |
-| GET | `/api/payments/{id}/` | Chi tiết |
-| PUT | `/api/payments/{id}/` | Cập nhật toàn bộ |
-| PATCH | `/api/payments/{id}/` | Cập nhật trạng thái |
-| DELETE | `/api/payments/{id}/` | Xóa |
+| GET | `/api/payments/` | Danh sach thanh toan |
+| POST | `/api/payments/` | Tao thanh toan |
+| GET | `/api/payments/{id}/` | Chi tiet |
+| PUT | `/api/payments/{id}/` | Cap nhat toan bo |
+| PATCH | `/api/payments/{id}/` | Cap nhat trang thai |
+| DELETE | `/api/payments/{id}/` | Xoa |
 
 **POST Body:**
 ```json
@@ -402,7 +651,7 @@ DELETE /api/customers/{id}/
 }
 ```
 
-**PATCH (cập nhật trạng thái):**
+**PATCH (cap nhat trang thai):**
 ```json
 {
     "status": "completed"
@@ -416,20 +665,20 @@ DELETE /api/customers/{id}/
 ### Fields
 | Field | Type | Required | Note |
 |-------|------|----------|------|
-| order_id | integer | ✅ | ID đơn hàng |
-| address | string | ✅ | Địa chỉ giao |
+| order_id | integer | ✅ | ID don hang |
+| address | string | ✅ | Dia chi giao |
 | status | string | ❌ | `preparing` / `shipped` / `in_transit` / `delivered` |
-| tracking_number | string | ❌ | Mã vận đơn |
+| tracking_number | string | ❌ | Ma van don |
 
 ### Endpoints
 | Method | URL | Mô tả |
 |--------|-----|--------|
-| GET | `/api/shipments/` | Danh sách vận chuyển |
-| POST | `/api/shipments/` | Tạo vận chuyển |
-| GET | `/api/shipments/{id}/` | Chi tiết |
-| PUT | `/api/shipments/{id}/` | Cập nhật toàn bộ |
-| PATCH | `/api/shipments/{id}/` | Cập nhật trạng thái |
-| DELETE | `/api/shipments/{id}/` | Xóa |
+| GET | `/api/shipments/` | Danh sach van chuyen |
+| POST | `/api/shipments/` | Tao van chuyen |
+| GET | `/api/shipments/{id}/` | Chi tiet |
+| PUT | `/api/shipments/{id}/` | Cap nhat toan bo |
+| PATCH | `/api/shipments/{id}/` | Cap nhat trang thai |
+| DELETE | `/api/shipments/{id}/` | Xoa |
 
 **POST Body:**
 ```json
@@ -440,7 +689,7 @@ DELETE /api/customers/{id}/
 }
 ```
 
-**PATCH (cập nhật trạng thái):**
+**PATCH (cap nhat trang thai):**
 ```json
 {
     "status": "shipped"
@@ -454,30 +703,32 @@ DELETE /api/customers/{id}/
 ### Fields
 | Field | Type | Required | Note |
 |-------|------|----------|------|
-| customer_id | integer | ✅ | ID khách hàng |
-| book_id | integer | ✅ | ID sách |
-| content | string | ✅ | Nội dung bình luận |
+| customer_id | integer | ✅ | ID khach hang |
+| book_id | integer | ✅ | ID sach |
+| content | string | ✅ | Noi dung binh luan |
 | rating | integer | ❌ | 1-5, default: 5 |
 
 ### Endpoints
 | Method | URL | Mô tả |
 |--------|-----|--------|
-| GET | `/api/comments/` | Danh sách bình luận |
-| POST | `/api/comments/` | Tạo bình luận |
-| GET | `/api/comments/{id}/` | Chi tiết |
-| PUT | `/api/comments/{id}/` | Cập nhật toàn bộ |
-| PATCH | `/api/comments/{id}/` | Cập nhật một phần |
-| DELETE | `/api/comments/{id}/` | Xóa |
+| GET | `/api/comments/` | Danh sach binh luan |
+| POST | `/api/comments/` | Tao binh luan |
+| GET | `/api/comments/{id}/` | Chi tiet |
+| PUT | `/api/comments/{id}/` | Cap nhat toan bo |
+| PATCH | `/api/comments/{id}/` | Cap nhat mot phan |
+| DELETE | `/api/comments/{id}/` | Xoa |
 
 **POST Body:**
 ```json
 {
     "customer_id": 1,
     "book_id": 1,
-    "content": "Sách rất hay, nội dung hấp dẫn!",
+    "content": "Sach rat hay, noi dung hap dan!",
     "rating": 5
 }
 ```
+
+> 🔒 **Auth:** All roles have full access to comments.
 
 ---
 
@@ -486,18 +737,18 @@ DELETE /api/customers/{id}/
 ### Recommendation Fields
 | Field | Type | Required | Note |
 |-------|------|----------|------|
-| customer_id | integer | ✅ | ID khách hàng |
-| book_id | integer | ✅ | ID sách |
+| customer_id | integer | ✅ | ID khach hang |
+| book_id | integer | ✅ | ID sach |
 | score | float | ❌ | 0.0-1.0, default: 0.0 |
 
 ### Endpoints
 | Method | URL | Mô tả |
 |--------|-----|--------|
-| GET | `/api/recommend/` | ⭐ Gợi ý sách ngẫu nhiên (max 5 cuốn) |
-| GET | `/api/recommendations/` | Danh sách recommendations đã lưu |
-| POST | `/api/recommendations/` | Lưu recommendation |
-| GET | `/api/recommendations/{id}/` | Chi tiết |
-| DELETE | `/api/recommendations/{id}/` | Xóa |
+| GET | `/api/recommend/` | ⭐ Goi y sach ngau nhien (max 5 cuon) |
+| GET | `/api/recommendations/` | Danh sach recommendations da luu |
+| POST | `/api/recommendations/` | Luu recommendation |
+| GET | `/api/recommendations/{id}/` | Chi tiet |
+| DELETE | `/api/recommendations/{id}/` | Xoa |
 
 **GET /api/recommend/ Response:**
 ```json
@@ -508,14 +759,18 @@ DELETE /api/customers/{id}/
             "title": "Dune",
             "author": "Frank Herbert",
             "price": "15.99",
-            "stock": 50
+            "stock": 50,
+            "catalog_id": 1,
+            "image_url": "https://covers.openlibrary.org/b/id/12345-L.jpg"
         },
         {
             "id": 3,
             "title": "1984",
             "author": "George Orwell",
             "price": "12.50",
-            "stock": 30
+            "stock": 30,
+            "catalog_id": 1,
+            "image_url": ""
         }
     ]
 }
@@ -532,38 +787,57 @@ DELETE /api/customers/{id}/
 
 ---
 
-## 🔥 Luồng nghiệp vụ chính (Business Flow)
+## 🔥 Luong nghiep vu chinh (Business Flow)
 
 ```
-1. Tạo Customer    POST /api/customers/        → Auto tạo Cart
-2. Thêm Sách       POST /api/books/            → Nhập kho sách
-3. Thêm vào Giỏ    POST /api/cart-items/        → Chọn sách vào giỏ
-4. Đặt hàng        POST /api/orders/            → Tạo Order + Payment + Shipment
-5. Thanh toán       PATCH /api/payments/{id}/    → Cập nhật status = completed
-6. Vận chuyển       PATCH /api/shipments/{id}/   → Cập nhật status = delivered
-7. Đánh giá         POST /api/comments/          → Khách đánh giá sách
-8. Gợi ý           GET /api/recommend/           → AI gợi ý sách
+0. Dang nhap       POST /api/auth/login/        -> Nhan JWT tokens -> Luu localStorage
+1. Tao Customer    POST /api/customers/          -> Auto tao Cart
+2. Them Sach       POST /api/books/              -> Nhap kho sach (voi catalog_id + image_url)
+3. Them vao Gio    POST /api/cart-items/         -> Chon sach vao gio (verify book exists)
+4. Dat hang        POST /api/orders/             -> Tao Order + Payment + Shipment
+5. Thanh toan      PATCH /api/payments/{id}/     -> Cap nhat status = completed
+6. Van chuyen      PATCH /api/shipments/{id}/    -> Cap nhat status = delivered
+7. Danh gia        POST /api/comments/           -> Khach danh gia sach (1-5 sao)
+8. Goi y           GET /api/recommend/           -> AI goi y sach
 ```
 
 ---
 
 ## ⚠️ Error Responses
 
-| Status | Ý nghĩa |
+| Status | Y nghia |
 |--------|---------|
-| 400 | Bad Request - Dữ liệu không hợp lệ |
-| 404 | Not Found - Không tìm thấy resource |
-| 503 | Service Unavailable - Không kết nối được service |
-| 504 | Gateway Timeout - Service phản hồi quá lâu |
+| 400 | Bad Request - Du lieu khong hop le |
+| 401 | Unauthorized - Token khong hop le hoac het han |
+| 403 | Forbidden - Khong du quyen (role khong phu hop) |
+| 404 | Not Found - Khong tim thay resource |
+| 503 | Service Unavailable - Khong ket noi duoc service |
+| 504 | Gateway Timeout - Service phan hoi qua lau |
 
+**Token het han:**
 ```json
 {
-    "error": "Cart not found"
+    "error": "Token has expired"
 }
 ```
 
+**Khong du quyen:**
+```json
+{
+    "error": "Forbidden: insufficient role permissions"
+}
+```
+
+**Du lieu khong hop le:**
 ```json
 {
     "email": ["This field must be unique."]
+}
+```
+
+**Service khong kha dung:**
+```json
+{
+    "error": "Cart not found"
 }
 ```

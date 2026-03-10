@@ -6,7 +6,16 @@ urlpatterns = [
     # Auth page routes
     path('pages/login.html', views.login_page, name='login-page'),
     path('pages/register.html', views.register_page, name='register-page'),
-    # Page routes
+    # Customer storefront routes
+    path('pages/store.html', views.store_page, name='store-page'),
+    path('pages/book-detail.html', views.book_detail_page, name='book-detail-page'),
+    path('pages/my-cart.html', views.my_cart_page, name='my-cart-page'),
+    path('pages/my-orders.html', views.my_orders_page, name='my-orders-page'),
+    path('pages/my-profile.html', views.my_profile_page, name='my-profile-page'),
+    path('pages/checkout.html', views.checkout_page, name='checkout-page'),
+    # Admin routes
+    path('pages/admin.html', views.admin_page, name='admin-page'),
+    # Legacy page routes
     path('pages/books.html', views.books_page, name='books-page'),
     path('pages/cart.html', views.cart_page, name='cart-page'),
     path('pages/customers.html', views.customers_page, name='customers-page'),

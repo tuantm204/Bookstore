@@ -1,208 +1,386 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BookStore - Microservices</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f6f9; color: #333; }
-        .navbar { background: #2c3e50; color: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
-        .navbar h1 { font-size: 24px; }
-        .nav-links a { color: white; text-decoration: none; margin-left: 20px; font-size: 16px; }
-        .nav-links a:hover { text-decoration: underline; }
-        .container { max-width: 1000px; margin: 40px auto; padding: 0 20px; }
-        .hero { background: #3498db; color: white; padding: 60px 30px; border-radius: 12px; text-align: center; margin-bottom: 40px; }
-        .hero h2 { font-size: 36px; margin-bottom: 10px; }
-        .hero p { font-size: 18px; opacity: 0.9; }
-        .services { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
-        a.service-card { background: white; border-radius: 10px; padding: 25px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: transform 0.2s, box-shadow 0.2s; display: block; text-decoration: none; color: inherit; cursor: pointer; }
-        a.service-card:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,0.15); }
-        .service-card h3 { color: #2c3e50; margin-bottom: 8px; }
-        .service-card p { color: #666; font-size: 14px; }
-        .service-card .port { color: #3498db; font-weight: bold; font-size: 13px; }
-        .service-card .badge { display: inline-block; margin-top: 10px; padding: 4px 12px; background: #3498db; color: white; border-radius: 20px; font-size: 12px; }
-        .service-card.locked { opacity: 0.5; pointer-events: none; position: relative; }
-        .service-card.locked::after { content: '🔒'; position: absolute; top: 10px; right: 10px; font-size: 20px; }
-        .user-bar { background: #34495e; padding: 10px 30px; display: flex; justify-content: space-between; align-items: center; font-size: 14px; color: #ecf0f1; }
-        .user-bar .user-info { display: flex; align-items: center; gap: 12px; }
-        .user-bar .role-badge { padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 700; text-transform: uppercase; }
-        .role-admin { background: #e74c3c; color: white; }
-        .role-manager { background: #f39c12; color: white; }
-        .role-staff { background: #27ae60; color: white; }
-        .role-customer { background: #3498db; color: white; }
-        .btn-logout { background: #e74c3c; color: white; border: none; padding: 6px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; }
-        .btn-logout:hover { background: #c0392b; }
-        .auth-links { display: flex; gap: 10px; }
-        .btn-auth { padding: 8px 18px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px; }
-        .btn-auth.login { background: #3498db; color: white; }
-        .btn-auth.register { background: #27ae60; color: white; }
-        .btn-auth:hover { opacity: 0.9; }
-        .section-title { margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
-        .permission-note { background: #fff3cd; border: 1px solid #ffc107; border-radius: 8px; padding: 12px 16px; margin-bottom: 20px; font-size: 14px; color: #856404; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>BookStore - Nhà Sách Online</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:#f8fafc;color:#1e293b}
+a{text-decoration:none;color:inherit}
+
+/* Top Bar */
+.topbar{background:#1e293b;color:#94a3b8;font-size:13px;padding:8px 0}
+.topbar .wrap{max-width:1280px;margin:0 auto;padding:0 24px;display:flex;justify-content:space-between;align-items:center}
+.topbar a{color:#94a3b8;margin-left:16px;transition:color .2s}.topbar a:hover{color:#fff}
+
+/* Header */
+header{background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.08);position:sticky;top:0;z-index:100}
+.header-wrap{max-width:1280px;margin:0 auto;padding:12px 24px;display:flex;align-items:center;gap:24px}
+.logo{font-size:24px;font-weight:800;color:#2563eb;white-space:nowrap}
+.logo i{margin-right:6px}
+.search-box{flex:1;max-width:520px;position:relative}
+.search-box input{width:100%;padding:10px 44px 10px 16px;border:2px solid #e2e8f0;border-radius:10px;font-size:14px;font-family:inherit;transition:border .2s}
+.search-box input:focus{outline:none;border-color:#2563eb}
+.search-box button{position:absolute;right:4px;top:4px;bottom:4px;width:36px;border:none;background:#2563eb;color:#fff;border-radius:8px;cursor:pointer;font-size:14px}
+.header-actions{display:flex;align-items:center;gap:20px}
+.header-actions a,.header-actions button{background:none;border:none;color:#64748b;font-size:14px;cursor:pointer;display:flex;align-items:center;gap:6px;font-family:inherit;white-space:nowrap;transition:color .2s}
+.header-actions a:hover,.header-actions button:hover{color:#2563eb}
+.cart-badge{position:relative}
+.cart-badge .count{position:absolute;top:-6px;right:-10px;background:#ef4444;color:#fff;font-size:10px;width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700}
+.user-menu{color:#2563eb!important;font-weight:600}
+.btn-login{background:#2563eb!important;color:#fff!important;padding:8px 20px;border-radius:8px;font-weight:600}
+.btn-login:hover{background:#1d4ed8!important}
+.btn-admin{background:#f59e0b!important;color:#fff!important;padding:6px 14px;border-radius:6px;font-weight:600;font-size:12px}
+
+/* Navigation */
+.nav-bar{background:#fff;border-top:1px solid #f1f5f9}
+.nav-bar .wrap{max-width:1280px;margin:0 auto;padding:0 24px;display:flex;gap:0}
+.nav-bar a{padding:12px 20px;font-size:14px;font-weight:500;color:#475569;transition:all .2s;border-bottom:2px solid transparent}
+.nav-bar a:hover,.nav-bar a.active{color:#2563eb;border-bottom-color:#2563eb}
+
+/* Hero */
+.hero{background:linear-gradient(135deg,#1e40af 0%,#7c3aed 100%);color:#fff;padding:64px 0}
+.hero .wrap{max-width:1280px;margin:0 auto;padding:0 24px;display:flex;align-items:center;gap:48px}
+.hero-text{flex:1}.hero-text h1{font-size:42px;font-weight:800;line-height:1.2;margin-bottom:16px}
+.hero-text p{font-size:18px;opacity:.85;margin-bottom:28px;line-height:1.6}
+.hero-text .hero-btns{display:flex;gap:12px}
+.hero-text .hero-btns a{padding:14px 32px;border-radius:10px;font-weight:700;font-size:15px;transition:all .2s}
+.btn-hero-primary{background:#fff;color:#1e40af}.btn-hero-primary:hover{background:#f0f9ff}
+.btn-hero-secondary{background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3)}.btn-hero-secondary:hover{background:rgba(255,255,255,.25)}
+.hero-visual{flex:0 0 320px;text-align:center;font-size:160px;opacity:.3}
+
+/* Sections */
+.section{max-width:1280px;margin:0 auto;padding:48px 24px}
+.section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:28px}
+.section-header h2{font-size:24px;font-weight:700;color:#1e293b}
+.section-header a{color:#2563eb;font-size:14px;font-weight:600}
+.section-header a:hover{text-decoration:underline}
+
+/* Category Cards */
+.cat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px}
+.cat-card{background:#fff;border-radius:12px;padding:24px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.06);transition:all .3s;cursor:pointer;border:1px solid #f1f5f9}
+.cat-card:hover{transform:translateY(-4px);box-shadow:0 8px 25px rgba(0,0,0,.1);border-color:#2563eb}
+.cat-card .cat-icon{font-size:36px;margin-bottom:12px}
+.cat-card h4{font-size:14px;font-weight:600;color:#334155}
+.cat-card p{font-size:12px;color:#94a3b8;margin-top:4px}
+
+/* Book Grid */
+.book-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:20px}
+.book-card{background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.06);transition:all .3s;border:1px solid #f1f5f9}
+.book-card:hover{transform:translateY(-4px);box-shadow:0 8px 25px rgba(0,0,0,.12)}
+.book-cover{height:180px;display:flex;align-items:center;justify-content:center;font-size:48px;position:relative}
+.book-cover .stock-badge{position:absolute;top:10px;right:10px;padding:3px 8px;border-radius:6px;font-size:11px;font-weight:600}
+.stock-ok{background:#dcfce7;color:#166534}.stock-low{background:#fef9c3;color:#854d0e}.stock-out{background:#fee2e2;color:#991b1b}
+.book-info{padding:16px}
+.book-info h4{font-size:15px;font-weight:600;color:#1e293b;margin-bottom:4px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.book-info .author{font-size:13px;color:#64748b;margin-bottom:10px}
+.book-info .price-row{display:flex;align-items:center;justify-content:space-between}
+.book-info .price{font-size:18px;font-weight:700;color:#dc2626}
+.book-info .btn-add{width:34px;height:34px;border-radius:8px;border:none;background:#2563eb;color:#fff;cursor:pointer;font-size:14px;transition:background .2s;display:flex;align-items:center;justify-content:center}
+.book-info .btn-add:hover{background:#1d4ed8}
+
+/* Features */
+.features{background:#fff;border-top:1px solid #f1f5f9;border-bottom:1px solid #f1f5f9}
+.feat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:24px;max-width:1280px;margin:0 auto;padding:40px 24px}
+.feat-item{display:flex;align-items:center;gap:16px}
+.feat-item i{font-size:28px;color:#2563eb;width:40px;text-align:center}
+.feat-item div h4{font-size:14px;font-weight:600;color:#1e293b}
+.feat-item div p{font-size:13px;color:#64748b}
+
+/* Footer */
+footer{background:#1e293b;color:#94a3b8;padding:48px 0 24px}
+.footer-grid{max-width:1280px;margin:0 auto;padding:0 24px;display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:40px}
+.footer-grid h4{color:#fff;font-size:15px;margin-bottom:16px}
+.footer-grid p,.footer-grid a{font-size:13px;color:#94a3b8;line-height:2}
+.footer-grid a:hover{color:#fff}
+.footer-bottom{max-width:1280px;margin:0 auto;padding:24px;border-top:1px solid #334155;margin-top:32px;text-align:center;font-size:13px}
+.footer-brand{font-size:20px;font-weight:800;color:#fff;margin-bottom:8px}
+
+/* Skeleton loading */
+.skeleton{background:linear-gradient(90deg,#f1f5f9 25%,#e2e8f0 50%,#f1f5f9 75%);background-size:200% 100%;animation:shimmer 1.5s infinite}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+/* Toast */
+#toast-container{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column-reverse;gap:10px}
+.toast{display:flex;align-items:center;gap:12px;padding:14px 20px;border-radius:12px;color:#fff;font-size:14px;font-weight:500;font-family:'Inter',sans-serif;box-shadow:0 8px 32px rgba(0,0,0,.18);animation:toastIn .4s ease;min-width:280px;max-width:420px;backdrop-filter:blur(8px)}
+.toast.success{background:linear-gradient(135deg,#16a34a,#15803d)}
+.toast.error{background:linear-gradient(135deg,#dc2626,#b91c1c)}
+.toast.info{background:linear-gradient(135deg,#2563eb,#1d4ed8)}
+.toast i{font-size:18px;flex-shrink:0}
+.toast .toast-msg{flex:1}
+.toast .toast-close{background:none;border:none;color:rgba(255,255,255,.7);cursor:pointer;font-size:16px;padding:0 0 0 8px;transition:color .2s}
+.toast .toast-close:hover{color:#fff}
+.toast.hide{animation:toastOut .3s ease forwards}
+@keyframes toastIn{from{opacity:0;transform:translateX(80px) scale(.95)}to{opacity:1;transform:translateX(0) scale(1)}}
+@keyframes toastOut{to{opacity:0;transform:translateX(80px) scale(.95)}}
+</style>
 </head>
 <body>
-    <nav class="navbar">
-        <h1>📚 BookStore Microservices</h1>
-        <div class="nav-links">
-            <a href="/">Home</a>
-            <a href="/pages/books.html">Books</a>
-            <a href="/pages/cart.html">Cart</a>
-            <a href="/pages/orders.html">Orders</a>
-        </div>
-    </nav>
-    <!-- User bar: shows when logged in -->
-    <div class="user-bar" id="userBar" style="display:none">
-        <div class="user-info">
-            <span>👤 <strong id="displayName"></strong></span>
-            <span class="role-badge" id="roleBadge"></span>
-        </div>
-        <button class="btn-logout" onclick="doLogout()">🚪 Đăng xuất</button>
-    </div>
-    <!-- Auth prompt: shows when not logged in -->
-    <div class="user-bar" id="authBar" style="display:none">
-        <span>Bạn chưa đăng nhập</span>
-        <div class="auth-links">
-            <a href="/pages/login.html" class="btn-auth login">🔐 Đăng nhập</a>
-            <a href="/pages/register.html" class="btn-auth register">📝 Đăng ký</a>
-        </div>
-    </div>
 
-    <div class="container">
-        <div class="hero">
-            <h2>Welcome to BookStore</h2>
-            <p>A microservices-based bookstore system built with Django REST Framework</p>
-            <p style="margin-top:8px;font-size:14px;opacity:0.8" id="heroSubtext"></p>
+<!-- Top Bar -->
+<div class="topbar">
+<div class="wrap">
+<span><i class="fas fa-truck"></i> Miễn phí vận chuyển cho đơn hàng từ $50</span>
+<div>
+<a href="/pages/my-orders.html"><i class="fas fa-box"></i> Tra cứu đơn hàng</a>
+<a href="tel:19001234"><i class="fas fa-phone"></i> 1900-1234</a>
+</div>
+</div>
+</div>
+
+<!-- Header -->
+<header>
+<div class="header-wrap">
+<a href="/" class="logo"><i class="fas fa-book-open"></i>BookStore</a>
+<div class="search-box">
+<input type="text" id="searchInput" placeholder="Tìm kiếm sách, tác giả..." onkeydown="if(event.key==='Enter')doSearch()">
+<button onclick="doSearch()"><i class="fas fa-search"></i></button>
+</div>
+<div class="header-actions" id="headerActions">
+<!-- Populated by JS -->
+</div>
+</div>
+</header>
+
+<!-- Navigation -->
+<nav class="nav-bar">
+<div class="wrap">
+<a href="/" class="active"><i class="fas fa-home"></i> Trang chủ</a>
+<a href="/pages/store.html"><i class="fas fa-store"></i> Cửa hàng</a>
+<a href="/pages/store.html?sort=newest"><i class="fas fa-sparkles"></i> Sách mới</a>
+<a href="/pages/store.html?sort=popular"><i class="fas fa-fire"></i> Bán chạy</a>
+<a href="/pages/my-orders.html"><i class="fas fa-box"></i> Đơn hàng</a>
+</div>
+</nav>
+
+<!-- Hero -->
+<section class="hero">
+<div class="wrap">
+<div class="hero-text">
+<h1>Khám phá kho sách<br>hàng nghìn đầu sách</h1>
+<p>Từ tiểu thuyết, văn học, kỹ năng sống đến sách chuyên ngành — tất cả đều có tại BookStore với giá tốt nhất.</p>
+<div class="hero-btns">
+<a href="/pages/store.html" class="btn-hero-primary"><i class="fas fa-shopping-bag"></i> Mua sắm ngay</a>
+<a href="/pages/store.html" class="btn-hero-secondary"><i class="fas fa-compass"></i> Khám phá</a>
+</div>
+</div>
+<div class="hero-visual">📚</div>
+</div>
+</section>
+
+<!-- Features -->
+<div class="features">
+<div class="feat-grid">
+<div class="feat-item"><i class="fas fa-truck-fast"></i><div><h4>Giao hàng nhanh</h4><p>Giao trong 2-3 ngày toàn quốc</p></div></div>
+<div class="feat-item"><i class="fas fa-shield-halved"></i><div><h4>Đảm bảo chất lượng</h4><p>Sách chính hãng 100%</p></div></div>
+<div class="feat-item"><i class="fas fa-rotate-left"></i><div><h4>Đổi trả dễ dàng</h4><p>Hoàn trả trong 7 ngày</p></div></div>
+<div class="feat-item"><i class="fas fa-headset"></i><div><h4>Hỗ trợ 24/7</h4><p>Luôn sẵn sàng hỗ trợ bạn</p></div></div>
+</div>
+</div>
+
+<!-- Categories -->
+<section class="section">
+<div class="section-header">
+<h2><i class="fas fa-layer-group" style="color:#2563eb;margin-right:8px"></i>Danh mục sách</h2>
+<a href="/pages/store.html">Xem tất cả <i class="fas fa-arrow-right"></i></a>
+</div>
+<div class="cat-grid" id="catGrid">
+<div class="cat-card skeleton" style="height:120px"></div>
+<div class="cat-card skeleton" style="height:120px"></div>
+<div class="cat-card skeleton" style="height:120px"></div>
+<div class="cat-card skeleton" style="height:120px"></div>
+</div>
+</section>
+
+<!-- New Books -->
+<section class="section" style="padding-top:0">
+<div class="section-header">
+<h2><i class="fas fa-sparkles" style="color:#f59e0b;margin-right:8px"></i>Sách mới nhất</h2>
+<a href="/pages/store.html?sort=newest">Xem tất cả <i class="fas fa-arrow-right"></i></a>
+</div>
+<div class="book-grid" id="newBooks">
+<div class="book-card"><div class="book-cover skeleton" style="height:180px"></div><div class="book-info"><div class="skeleton" style="height:20px;border-radius:4px;margin-bottom:8px"></div><div class="skeleton" style="height:14px;width:60%;border-radius:4px"></div></div></div>
+<div class="book-card"><div class="book-cover skeleton" style="height:180px"></div><div class="book-info"><div class="skeleton" style="height:20px;border-radius:4px;margin-bottom:8px"></div><div class="skeleton" style="height:14px;width:60%;border-radius:4px"></div></div></div>
+<div class="book-card"><div class="book-cover skeleton" style="height:180px"></div><div class="book-info"><div class="skeleton" style="height:20px;border-radius:4px;margin-bottom:8px"></div><div class="skeleton" style="height:14px;width:60%;border-radius:4px"></div></div></div>
+<div class="book-card"><div class="book-cover skeleton" style="height:180px"></div><div class="book-info"><div class="skeleton" style="height:20px;border-radius:4px;margin-bottom:8px"></div><div class="skeleton" style="height:14px;width:60%;border-radius:4px"></div></div></div>
+</div>
+</section>
+
+<!-- Recommended -->
+<section class="section" style="padding-top:0">
+<div class="section-header">
+<h2><i class="fas fa-robot" style="color:#8b5cf6;margin-right:8px"></i>Gợi ý cho bạn</h2>
+</div>
+<div class="book-grid" id="recBooks">
+<div class="book-card"><div class="book-cover skeleton" style="height:180px"></div><div class="book-info"><div class="skeleton" style="height:20px;border-radius:4px;margin-bottom:8px"></div><div class="skeleton" style="height:14px;width:60%;border-radius:4px"></div></div></div>
+<div class="book-card"><div class="book-cover skeleton" style="height:180px"></div><div class="book-info"><div class="skeleton" style="height:20px;border-radius:4px;margin-bottom:8px"></div><div class="skeleton" style="height:14px;width:60%;border-radius:4px"></div></div></div>
+<div class="book-card"><div class="book-cover skeleton" style="height:180px"></div><div class="book-info"><div class="skeleton" style="height:20px;border-radius:4px;margin-bottom:8px"></div><div class="skeleton" style="height:14px;width:60%;border-radius:4px"></div></div></div>
+<div class="book-card"><div class="book-cover skeleton" style="height:180px"></div><div class="book-info"><div class="skeleton" style="height:20px;border-radius:4px;margin-bottom:8px"></div><div class="skeleton" style="height:14px;width:60%;border-radius:4px"></div></div></div>
+</div>
+</section>
+
+<!-- Footer -->
+<footer>
+<div class="footer-grid">
+<div>
+<div class="footer-brand"><i class="fas fa-book-open"></i> BookStore</div>
+<p>Hệ thống nhà sách trực tuyến hàng đầu. Cung cấp sách chất lượng với giá tốt nhất.</p>
+</div>
+<div><h4>Hỗ trợ</h4><a href="#" style="display:block">Hướng dẫn mua hàng</a><a href="#" style="display:block">Chính sách đổi trả</a><a href="#" style="display:block">Phương thức thanh toán</a></div>
+<div><h4>Tài khoản</h4><a href="/pages/login.html" style="display:block">Đăng nhập</a><a href="/pages/register.html" style="display:block">Đăng ký</a><a href="/pages/my-orders.html" style="display:block">Đơn hàng</a></div>
+<div><h4>Liên hệ</h4><p><i class="fas fa-envelope"></i> support@bookstore.vn</p><p><i class="fas fa-phone"></i> 1900-1234</p><p><i class="fas fa-location-dot"></i> TP. Hồ Chí Minh, Việt Nam</p></div>
+</div>
+<div class="footer-bottom">© 2026 BookStore Microservices. Built with Django REST Framework.</div>
+</footer>
+
+<div id="toast-container"></div>
+
+<script>
+function showToast(msg,type='success',duration=3000){
+    const t=document.createElement('div');t.className='toast '+type;
+    const icons={success:'fa-circle-check',error:'fa-circle-xmark',info:'fa-circle-info'};
+    t.innerHTML=`<i class="fas ${icons[type]||icons.info}"></i><span class="toast-msg">${msg}</span><button class="toast-close" onclick="this.parentElement.classList.add('hide');setTimeout(()=>this.parentElement.remove(),300)"><i class="fas fa-times"></i></button>`;
+    document.getElementById('toast-container').appendChild(t);
+    setTimeout(()=>{if(t.parentElement){t.classList.add('hide');setTimeout(()=>t.remove(),300)}},duration);
+}
+
+const API='/api';
+const token=localStorage.getItem('access_token');
+const userStr=localStorage.getItem('user');
+let currentUser=null;
+const coverColors=['#dbeafe','#fce7f3','#dcfce7','#fef9c3','#f3e8ff','#ffedd5','#e0f2fe','#fae8ff'];
+const coverIcons=['📖','📚','📘','📗','📕','📙','📓','📔'];
+
+function authFetch(url,opts={}){
+    if(token){opts.headers={...(opts.headers||{}),'Authorization':'Bearer '+token}}
+    return fetch(url,opts);
+}
+
+// Header actions
+(function(){
+    const el=document.getElementById('headerActions');
+    if(token&&userStr){
+        try{currentUser=JSON.parse(userStr)}catch(e){}
+    }
+    if(currentUser){
+        const role=currentUser.role;
+        const isStaff=['admin','manager','staff'].includes(role);
+        el.innerHTML=`
+            ${isStaff?'<a href="/pages/admin.html" class="btn-admin"><i class="fas fa-gauge-high"></i> Quản lý</a>':''}
+            <a href="/pages/my-cart.html" class="cart-badge"><i class="fas fa-shopping-cart fa-lg"></i><span class="count" id="cartCount">0</span></a>
+            <a href="/pages/my-profile.html" class="user-menu"><i class="fas fa-user-circle"></i> ${currentUser.full_name||currentUser.username}</a>
+            <button onclick="doLogout()" style="color:#ef4444"><i class="fas fa-right-from-bracket"></i> Thoát</button>
+        `;
+        loadCartCount();
+    }else{
+        el.innerHTML=`
+            <a href="/pages/my-cart.html" class="cart-badge"><i class="fas fa-shopping-cart fa-lg"></i></a>
+            <a href="/pages/login.html" class="btn-login"><i class="fas fa-sign-in-alt"></i> Đăng nhập</a>
+        `;
+    }
+})();
+
+function doLogout(){localStorage.clear();location.href='/pages/login.html'}
+function doSearch(){const q=document.getElementById('searchInput').value;if(q)location.href='/pages/store.html?q='+encodeURIComponent(q)}
+
+async function loadCartCount(){
+    if(!currentUser)return;
+    const cid=localStorage.getItem('customer_id');
+    if(!cid)return;
+    try{
+        const r=await authFetch(API+'/carts/customer/'+cid+'/');
+        if(r.ok){const d=await r.json();const c=document.getElementById('cartCount');if(c)c.textContent=(d.items||[]).length}
+    }catch(e){}
+}
+
+// Book card HTML
+function bookCardHTML(b,i){
+    const color=coverColors[i%coverColors.length];
+    const icon=coverIcons[i%coverIcons.length];
+    const stockLabel=b.stock>5?'<span class="stock-badge stock-ok">Còn hàng</span>':b.stock>0?'<span class="stock-badge stock-low">Sắp hết</span>':'<span class="stock-badge stock-out">Hết hàng</span>';
+    return `<a class="book-card" href="/pages/book-detail.html?id=${b.id}">
+        <div class="book-cover" style="background:${color}">${icon}${stockLabel}</div>
+        <div class="book-info">
+            <h4>${b.title}</h4>
+            <div class="author"><i class="fas fa-user-pen"></i> ${b.author}</div>
+            <div class="price-row">
+                <span class="price">$${parseFloat(b.price).toFixed(2)}</span>
+                <button class="btn-add" onclick="event.preventDefault();addToCart(${b.id},this)" title="Thêm vào giỏ"><i class="fas fa-plus"></i></button>
+            </div>
         </div>
+    </a>`;
+}
 
-        <div id="permNote" class="permission-note" style="display:none">
-            ⚠️ Một số chức năng yêu cầu quyền cao hơn. Liên hệ Admin để được phân quyền phù hợp.
-        </div>
+// Load categories
+async function loadCategories(){
+    try{
+        const r=await authFetch(API+'/catalogs/');const d=await r.json();
+        const cats=Array.isArray(d)?d:(d.results||[]);
+        const icons=['📚','📖','🎓','💡','🔬','🎨','💻','🌍'];
+        document.getElementById('catGrid').innerHTML=cats.length?cats.map((c,i)=>`
+            <a class="cat-card" href="/pages/store.html?cat=${c.id}">
+                <div class="cat-icon">${icons[i%icons.length]}</div>
+                <h4>${c.name}</h4>
+                <p>${c.description||''}</p>
+            </a>
+        `).join(''):'<p style="color:#94a3b8">Chưa có danh mục nào</p>';
+    }catch(e){document.getElementById('catGrid').innerHTML='<p style="color:#94a3b8">Không thể tải danh mục</p>'}
+}
 
-        <h2 class="section-title">Services</h2>
-        <div class="services" id="serviceGrid">
-            <a class="service-card" href="/pages/customers.html" data-roles="admin,manager,staff,customer">
-                <h3>👤 Customer Service</h3>
-                <p>Manage customers</p>
-                <p class="port">Port: 8001</p>
-                <span class="badge">Open →</span>
-            </a>
-            <a class="service-card" href="/pages/staffs.html" data-roles="admin,manager,staff">
-                <h3>👨‍💼 Staff Service</h3>
-                <p>Manage staff members</p>
-                <p class="port">Port: 8002</p>
-                <span class="badge">Open →</span>
-            </a>
-            <a class="service-card" href="/pages/managers.html" data-roles="admin,manager">
-                <h3>👔 Manager Service</h3>
-                <p>Manage managers</p>
-                <p class="port">Port: 8003</p>
-                <span class="badge">Open →</span>
-            </a>
-            <a class="service-card" href="/pages/catalogs.html" data-roles="admin,manager,staff,customer">
-                <h3>📂 Catalog Service</h3>
-                <p>Manage book catalogs</p>
-                <p class="port">Port: 8004</p>
-                <span class="badge">Open →</span>
-            </a>
-            <a class="service-card" href="/pages/books.html" data-roles="admin,manager,staff,customer">
-                <h3>📖 Book Service</h3>
-                <p>Manage books inventory</p>
-                <p class="port">Port: 8005</p>
-                <span class="badge">Open →</span>
-            </a>
-            <a class="service-card" href="/pages/cart.html" data-roles="admin,manager,staff,customer">
-                <h3>🛒 Cart Service</h3>
-                <p>Shopping cart management</p>
-                <p class="port">Port: 8006</p>
-                <span class="badge">Open →</span>
-            </a>
-            <a class="service-card" href="/pages/orders.html" data-roles="admin,manager,staff,customer">
-                <h3>📦 Order Service</h3>
-                <p>Order processing</p>
-                <p class="port">Port: 8007</p>
-                <span class="badge">Open →</span>
-            </a>
-            <a class="service-card" href="/pages/payments.html" data-roles="admin,manager,staff,customer">
-                <h3>💳 Pay Service</h3>
-                <p>Payment processing</p>
-                <p class="port">Port: 8008</p>
-                <span class="badge">Open →</span>
-            </a>
-            <a class="service-card" href="/pages/shipments.html" data-roles="admin,manager,staff,customer">
-                <h3>🚚 Ship Service</h3>
-                <p>Shipping management</p>
-                <p class="port">Port: 8009</p>
-                <span class="badge">Open →</span>
-            </a>
-            <a class="service-card" href="/pages/comments.html" data-roles="admin,manager,staff,customer">
-                <h3>⭐ Comment & Rate</h3>
-                <p>Reviews and ratings</p>
-                <p class="port">Port: 8010</p>
-                <span class="badge">Open →</span>
-            </a>
-            <a class="service-card" href="/pages/recommender.html" data-roles="admin,manager,staff,customer">
-                <h3>🤖 Recommender AI</h3>
-                <p>Book recommendations</p>
-                <p class="port">Port: 8011</p>
-                <span class="badge">Open →</span>
-            </a>
-            <a class="service-card" href="/api/books/" style="background: #ecf0f1;" data-roles="admin,manager,staff,customer">
-                <h3>🌐 API Gateway</h3>
-                <p>Central API routing</p>
-                <p class="port">Port: 8000</p>
-                <span class="badge">API →</span>
-            </a>
-        </div>
-    </div>
+// Load books
+async function loadBooks(){
+    try{
+        const r=await authFetch(API+'/books/');const d=await r.json();
+        const books=Array.isArray(d)?d:(d.results||[]);
+        document.getElementById('newBooks').innerHTML=books.length?books.slice(0,8).map((b,i)=>bookCardHTML(b,i)).join(''):'<p style="color:#94a3b8">Chưa có sách nào</p>';
+    }catch(e){document.getElementById('newBooks').innerHTML='<p style="color:#ef4444">Lỗi tải sách</p>'}
+}
 
-    <script>
-        const token = localStorage.getItem('access_token');
-        const userStr = localStorage.getItem('user');
-        let currentUser = null;
+// Load recommendations
+async function loadRec(){
+    try{
+        const r=await authFetch(API+'/recommend/');
+        if(r.ok){const d=await r.json();const books=d.recommended_books||[];
+            document.getElementById('recBooks').innerHTML=books.length?books.map((b,i)=>bookCardHTML(b,i+4)).join(''):'<p style="color:#94a3b8">Chưa có gợi ý</p>';
+        }else{document.getElementById('recBooks').innerHTML='<p style="color:#94a3b8">Đăng nhập để xem gợi ý</p>'}
+    }catch(e){document.getElementById('recBooks').innerHTML='<p style="color:#94a3b8">Không thể tải gợi ý</p>'}
+}
 
-        function doLogout() {
-            localStorage.removeItem('access_token');
-            localStorage.removeItem('refresh_token');
-            localStorage.removeItem('user');
-            window.location.href = '/pages/login.html';
-        }
+async function addToCart(bookId,btn){
+    if(!token){location.href='/pages/login.html';return}
+    const cid=localStorage.getItem('customer_id');
+    if(!cid){showToast('Vui lòng cập nhật hồ sơ khách hàng','info');setTimeout(()=>location.href='/pages/my-profile.html',1500);return}
+    try{
+        const r=await authFetch(API+'/customers/'+cid+'/cart/add-item/',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({book_id:bookId,quantity:1})});
+        if(r.ok){loadCartCount();showToast('🛒 Đã thêm vào giỏ hàng thành công!','success');if(btn){btn.innerHTML='<i class="fas fa-check"></i>';btn.style.background='#16a34a';setTimeout(()=>{btn.innerHTML='<i class="fas fa-plus"></i>';btn.style.background=''},1500)}}
+        else{const d=await r.json();showToast(d.error||'Không thể thêm vào giỏ','error')}
+    }catch(e){showToast('Lỗi kết nối, vui lòng thử lại','error')}
+}
 
-        function applyRoleUI(role) {
-            const cards = document.querySelectorAll('.service-card[data-roles]');
-            let hasLocked = false;
-            cards.forEach(card => {
-                const allowedRoles = card.getAttribute('data-roles').split(',');
-                if (!allowedRoles.includes(role)) {
-                    card.classList.add('locked');
-                    card.removeAttribute('href');
-                    hasLocked = true;
-                }
-            });
-            if (hasLocked) {
-                document.getElementById('permNote').style.display = 'block';
+// Auto-resolve customer_id from auth user email
+async function resolveCustomerId(){
+    if(!currentUser||localStorage.getItem('customer_id'))return;
+    try{
+        const r=await authFetch(API+'/customers/');
+        if(r.ok){const d=await r.json();const list=Array.isArray(d)?d:(d.results||[]);
+            const match=list.find(c=>c.email===currentUser.email);
+            if(match){localStorage.setItem('customer_id',match.id)}
+            else{
+                const cr=await authFetch(API+'/customers/',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({full_name:currentUser.full_name||currentUser.username,email:currentUser.email})});
+                if(cr.ok){const nc=await cr.json();localStorage.setItem('customer_id',nc.id)}
             }
         }
+    }catch(e){}
+}
 
-        if (token && userStr) {
-            try {
-                currentUser = JSON.parse(userStr);
-                document.getElementById('userBar').style.display = 'flex';
-                document.getElementById('displayName').textContent = currentUser.full_name || currentUser.username;
-                const badge = document.getElementById('roleBadge');
-                badge.textContent = currentUser.role;
-                badge.classList.add('role-' + currentUser.role);
-                document.getElementById('heroSubtext').textContent =
-                    `Xin chào ${currentUser.full_name || currentUser.username}! Bạn đang đăng nhập với quyền ${currentUser.role.toUpperCase()}.`;
-                applyRoleUI(currentUser.role);
-            } catch(e) {
-                document.getElementById('authBar').style.display = 'flex';
-            }
-        } else {
-            document.getElementById('authBar').style.display = 'flex';
-            document.getElementById('heroSubtext').textContent = 'Vui lòng đăng nhập để sử dụng hệ thống.';
-        }
-    </script>
+resolveCustomerId().then(()=>loadCartCount());
+loadCategories();
+loadBooks();
+loadRec();
+</script>
 </body>
 </html>

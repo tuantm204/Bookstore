@@ -18,4 +18,4 @@ COPY . .
 
 EXPOSE 8012
 
-CMD ["sh", "-c", "python manage.py migrate --noinput && python manage.py runserver 0.0.0.0:8012"]
+CMD ["sh", "-c", "python manage.py migrate --noinput && python manage.py seed_accounts && python manage.py runserver 0.0.0.0:8012"]

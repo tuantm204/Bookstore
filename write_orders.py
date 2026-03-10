@@ -1,4 +1,10 @@
-<!DOCTYPE html>
+#!/usr/bin/env python3
+"""Write polished orders.html with bug fix and professional UI."""
+import os
+
+BASE = '/Users/truongmanhtuan/django_project/assgn05v1/bookstore-micro05/api-gateway/templates'
+
+orders_html = r'''<!DOCTYPE html>
 <html lang="vi">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
@@ -544,4 +550,9 @@ document.getElementById('detailModal').addEventListener('click', function(e) {
 load();
 </script>
 </body>
-</html>
+</html>'''
+
+path = os.path.join(BASE, 'orders.html')
+with open(path, 'w', encoding='utf-8') as f:
+    f.write(orders_html)
+print("✅ orders.html written successfully!")

@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Thanh toán - BookStore</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:#f8fafc;color:#1e293b}
+a{text-decoration:none;color:inherit}
+header{background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.08);position:sticky;top:0;z-index:100}
+.header-wrap{max-width:1280px;margin:0 auto;padding:12px 24px;display:flex;align-items:center;gap:24px}
+.logo{font-size:24px;font-weight:800;color:#2563eb}.logo i{margin-right:6px}
+.header-actions{display:flex;align-items:center;gap:16px;margin-left:auto}
+.header-actions a{color:#64748b;font-size:14px;display:flex;align-items:center;gap:6px}
+.header-actions a:hover{color:#2563eb}
+.breadcrumb{max-width:1280px;margin:0 auto;padding:16px 24px;font-size:13px;color:#94a3b8}
+.breadcrumb a{color:#64748b}.breadcrumb a:hover{color:#2563eb}
+
+/* Steps */
+.steps{max-width:1280px;margin:0 auto;padding:0 24px 24px;display:flex;justify-content:center;gap:0}
+.step{display:flex;align-items:center;gap:8px;padding:12px 24px;font-size:14px;font-weight:600;color:#94a3b8;position:relative}
+.step.active{color:#2563eb}
+.step.done{color:#16a34a}
+.step .step-num{width:32px;height:32px;border-radius:50%;border:2px solid #e2e8f0;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700}
+.step.active .step-num{border-color:#2563eb;background:#2563eb;color:#fff}
+.step.done .step-num{border-color:#16a34a;background:#16a34a;color:#fff}
+.step-line{width:60px;height:2px;background:#e2e8f0;margin:0 4px}
+.step-line.done{background:#16a34a}
+
+/* Layout */
+.checkout-layout{max-width:1280px;margin:0 auto;padding:0 24px 48px;display:grid;grid-template-columns:1fr 400px;gap:24px}
+
+/* Form Section */
+.section-card{background:#fff;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,.06);margin-bottom:20px;overflow:hidden}
+.section-card-header{padding:16px 24px;background:#f8fafc;border-bottom:1px solid #f1f5f9;display:flex;align-items:center;gap:10px;font-weight:700;font-size:15px}
+.section-card-header i{color:#2563eb;font-size:18px}
+.section-card-body{padding:24px}
+
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.form-row.full{grid-template-columns:1fr}
+.form-group{display:flex;flex-direction:column;gap:6px}
+.form-group label{font-size:13px;font-weight:600;color:#475569}
+.form-group label .required{color:#dc2626;margin-left:2px}
+.form-group input,.form-group select,.form-group textarea{padding:12px 16px;border:2px solid #e2e8f0;border-radius:10px;font-size:14px;font-family:inherit;transition:all .2s}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{outline:none;border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+.form-group textarea{resize:vertical;min-height:80px}
+
+/* Payment Methods */
+.pay-methods{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.pay-method{border:2px solid #e2e8f0;border-radius:10px;padding:16px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:12px}
+.pay-method:hover{border-color:#93c5fd}
+.pay-method.selected{border-color:#2563eb;background:#eff6ff}
+.pay-method i{font-size:24px;color:#64748b;width:32px;text-align:center}
+.pay-method.selected i{color:#2563eb}
+.pay-method-info{flex:1}
+.pay-method-info h4{font-size:14px;font-weight:600}
+.pay-method-info p{font-size:12px;color:#94a3b8}
+
+/* Order Summary */
+.order-summary{background:#fff;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,.06);height:fit-content;position:sticky;top:80px}
+.order-summary-header{padding:20px 24px;border-bottom:1px solid #f1f5f9;font-size:18px;font-weight:700}
+.order-summary-items{padding:20px 24px;max-height:300px;overflow-y:auto}
+.summary-item{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #f8fafc}
+.summary-item:last-child{border-bottom:none}
+.si-img{width:48px;height:60px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.si-info{flex:1;min-width:0}
+.si-info h5{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.si-info span{font-size:12px;color:#64748b}
+.si-price{font-weight:700;font-size:14px;color:#dc2626;white-space:nowrap}
+.summary-totals{padding:20px 24px;border-top:1px solid #f1f5f9}
+.summary-row{display:flex;justify-content:space-between;margin-bottom:10px;font-size:14px;color:#64748b}
+.summary-row.total{font-size:18px;font-weight:700;color:#1e293b;padding-top:14px;border-top:2px solid #f1f5f9;margin-top:14px}
+.btn-place-order{width:100%;padding:16px;background:linear-gradient(135deg,#dc2626,#b91c1c);color:#fff;border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .2s;margin:0 24px 24px;width:calc(100% - 48px)}
+.btn-place-order:hover{background:linear-gradient(135deg,#b91c1c,#991b1b);transform:translateY(-1px);box-shadow:0 4px 12px rgba(220,38,38,.3)}
+.btn-place-order:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none}
+.secure-note{text-align:center;padding:0 24px 20px;font-size:12px;color:#94a3b8}
+.secure-note i{color:#16a34a;margin-right:4px}
+
+.btn-back{display:inline-flex;align-items:center;gap:6px;color:#64748b;font-size:14px;font-weight:500;margin-bottom:16px}
+.btn-back:hover{color:#2563eb}
+
+/* Toast */
+#toast-container{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column-reverse;gap:10px}
+.toast{display:flex;align-items:center;gap:12px;padding:14px 20px;border-radius:12px;color:#fff;font-size:14px;font-weight:500;font-family:'Inter',sans-serif;box-shadow:0 8px 32px rgba(0,0,0,.18);animation:toastIn .4s ease;min-width:280px;max-width:420px}
+.toast.success{background:linear-gradient(135deg,#16a34a,#15803d)}
+.toast.error{background:linear-gradient(135deg,#dc2626,#b91c1c)}
+.toast.info{background:linear-gradient(135deg,#2563eb,#1d4ed8)}
+.toast i{font-size:18px;flex-shrink:0}
+.toast .toast-msg{flex:1}
+.toast .toast-close{background:none;border:none;color:rgba(255,255,255,.7);cursor:pointer;font-size:16px;padding:0 0 0 8px}
+.toast.hide{animation:toastOut .3s ease forwards}
+@keyframes toastIn{from{opacity:0;transform:translateX(80px) scale(.95)}to{opacity:1;transform:translateX(0) scale(1)}}
+@keyframes toastOut{to{opacity:0;transform:translateX(80px) scale(.95)}}
+
+@media(max-width:768px){.checkout-layout{grid-template-columns:1fr}.form-row{grid-template-columns:1fr}.pay-methods{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<header>
+<div class="header-wrap">
+<a href="/" class="logo"><i class="fas fa-book-open"></i>BookStore</a>
+<div class="header-actions">
+<a href="/pages/store.html"><i class="fas fa-store"></i> Cửa hàng</a>
+<a href="/pages/my-cart.html"><i class="fas fa-shopping-cart"></i> Giỏ hàng</a>
+<a href="/pages/my-profile.html"><i class="fas fa-user"></i> Tài khoản</a>
+</div>
+</div>
+</header>
+
+<div class="breadcrumb">
+<a href="/"><i class="fas fa-home"></i> Trang chủ</a> &rsaquo;
+<a href="/pages/my-cart.html">Giỏ hàng</a> &rsaquo;
+<strong>Thanh toán</strong>
+</div>
+
+<!-- Progress Steps -->
+<div class="steps">
+<div class="step done"><div class="step-num"><i class="fas fa-check"></i></div> Giỏ hàng</div>
+<div class="step-line done"></div>
+<div class="step active"><div class="step-num">2</div> Thông tin giao hàng</div>
+<div class="step-line"></div>
+<div class="step"><div class="step-num">3</div> Hoàn tất</div>
+</div>
+
+<div class="checkout-layout">
+<!-- Left: Forms -->
+<div>
+<a href="/pages/my-cart.html" class="btn-back"><i class="fas fa-arrow-left"></i> Quay lại giỏ hàng</a>
+
+<!-- Shipping Info -->
+<div class="section-card">
+<div class="section-card-header"><i class="fas fa-truck"></i> Thông tin giao hàng</div>
+<div class="section-card-body">
+<div class="form-row">
+<div class="form-group">
+<label>Họ và tên <span class="required">*</span></label>
+<input type="text" id="fullName" placeholder="Nguyễn Văn A">
+</div>
+<div class="form-group">
+<label>Số điện thoại <span class="required">*</span></label>
+<input type="tel" id="phone" placeholder="0901234567">
+</div>
+</div>
+<div class="form-row full">
+<div class="form-group">
+<label>Email</label>
+<input type="email" id="email" placeholder="email@example.com">
+</div>
+</div>
+<div class="form-row">
+<div class="form-group">
+<label>Tỉnh/Thành phố <span class="required">*</span></label>
+<select id="city">
+<option value="">Chọn tỉnh/thành phố</option>
+<option>TP. Hồ Chí Minh</option>
+<option>Hà Nội</option>
+<option>Đà Nẵng</option>
+<option>Hải Phòng</option>
+<option>Cần Thơ</option>
+<option>Bình Dương</option>
+<option>Đồng Nai</option>
+<option>Khánh Hòa</option>
+<option>Long An</option>
+<option>Quảng Ninh</option>
+<option>Thừa Thiên Huế</option>
+<option>Nghệ An</option>
+<option>Thanh Hóa</option>
+<option>Bắc Ninh</option>
+<option>Lâm Đồng</option>
+<option>Khác</option>
+</select>
+</div>
+<div class="form-group">
+<label>Quận/Huyện <span class="required">*</span></label>
+<input type="text" id="district" placeholder="Quận 1">
+</div>
+</div>
+<div class="form-row full">
+<div class="form-group">
+<label>Địa chỉ chi tiết <span class="required">*</span></label>
+<textarea id="address" placeholder="Số nhà, tên đường, phường/xã..."></textarea>
+</div>
+</div>
+<div class="form-row full">
+<div class="form-group">
+<label>Ghi chú đơn hàng</label>
+<textarea id="note" placeholder="Ghi chú thêm cho đơn hàng (tùy chọn)..." style="min-height:60px"></textarea>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Payment Method -->
+<div class="section-card">
+<div class="section-card-header"><i class="fas fa-credit-card"></i> Phương thức thanh toán</div>
+<div class="section-card-body">
+<div class="pay-methods">
+<div class="pay-method selected" onclick="selectPay(this,'cod')">
+<i class="fas fa-money-bill-wave"></i>
+<div class="pay-method-info"><h4>Thanh toán khi nhận hàng</h4><p>Trả tiền mặt khi giao hàng (COD)</p></div>
+</div>
+<div class="pay-method" onclick="selectPay(this,'credit_card')">
+<i class="fas fa-credit-card"></i>
+<div class="pay-method-info"><h4>Thẻ tín dụng/Ghi nợ</h4><p>Visa, Mastercard, JCB</p></div>
+</div>
+<div class="pay-method" onclick="selectPay(this,'bank_transfer')">
+<i class="fas fa-building-columns"></i>
+<div class="pay-method-info"><h4>Chuyển khoản ngân hàng</h4><p>Chuyển khoản qua Internet Banking</p></div>
+</div>
+<div class="pay-method" onclick="selectPay(this,'e_wallet')">
+<i class="fas fa-wallet"></i>
+<div class="pay-method-info"><h4>Ví điện tử</h4><p>MoMo, ZaloPay, VNPay</p></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Right: Order Summary -->
+<div class="order-summary">
+<div class="order-summary-header"><i class="fas fa-receipt" style="color:#2563eb;margin-right:8px"></i> Đơn hàng của bạn</div>
+<div class="order-summary-items" id="summaryItems">
+<div style="text-align:center;padding:20px;color:#94a3b8"><i class="fas fa-spinner fa-spin"></i> Đang tải...</div>
+</div>
+<div class="summary-totals" id="summaryTotals"></div>
+<button class="btn-place-order" id="btnPlaceOrder" onclick="placeOrder()" disabled>
+<i class="fas fa-lock"></i> Đặt hàng
+</button>
+<div class="secure-note"><i class="fas fa-shield-halved"></i> Thông tin của bạn được bảo mật an toàn</div>
+</div>
+</div>
+
+<div id="toast-container"></div>
+
+<script>
+function showToast(msg,type='success',duration=3000){
+    const t=document.createElement('div');t.className='toast '+type;
+    const icons={success:'fa-circle-check',error:'fa-circle-xmark',info:'fa-circle-info'};
+    t.innerHTML=`<i class="fas ${icons[type]||icons.info}"></i><span class="toast-msg">${msg}</span><button class="toast-close" onclick="this.parentElement.classList.add('hide');setTimeout(()=>this.parentElement.remove(),300)"><i class="fas fa-times"></i></button>`;
+    document.getElementById('toast-container').appendChild(t);
+    setTimeout(()=>{if(t.parentElement){t.classList.add('hide');setTimeout(()=>t.remove(),300)}},duration);
+}
+
+const API='/api',token=localStorage.getItem('access_token'),userStr=localStorage.getItem('user');
+let currentUser=null,cartData=null,booksCache={},selectedPayMethod='cod';
+const coverColors=['#dbeafe','#fce7f3','#dcfce7','#fef9c3','#f3e8ff','#ffedd5'];
+function authFetch(url,o={}){if(token){o.headers={...(o.headers||{}),'Authorization':'Bearer '+token}}return fetch(url,o)}
+
+if(token&&userStr){try{currentUser=JSON.parse(userStr)}catch(e){}}
+if(!currentUser){location.href='/pages/login.html'}
+
+function selectPay(el,method){
+    document.querySelectorAll('.pay-method').forEach(p=>p.classList.remove('selected'));
+    el.classList.add('selected');
+    selectedPayMethod=method;
+}
+
+// Pre-fill from user info
+if(currentUser){
+    document.getElementById('fullName').value=currentUser.full_name||'';
+    document.getElementById('email').value=currentUser.email||'';
+}
+
+async function loadData(){
+    const cid=localStorage.getItem('customer_id');
+    if(!cid){showToast('Không tìm thấy thông tin khách hàng','error');return}
+    try{
+        const [booksR,cartR]=await Promise.all([authFetch(API+'/books/'),authFetch(API+'/carts/customer/'+cid+'/')]);
+        const bd=await booksR.json();(Array.isArray(bd)?bd:(bd.results||[])).forEach(b=>booksCache[b.id]=b);
+        if(!cartR.ok)throw new Error();
+        cartData=await cartR.json();
+        renderSummary();
+    }catch(e){
+        document.getElementById('summaryItems').innerHTML='<div style="text-align:center;padding:20px;color:#ef4444">Lỗi tải dữ liệu</div>';
+    }
+}
+
+function renderSummary(){
+    const items=cartData.items||[];
+    if(!items.length){location.href='/pages/my-cart.html';return}
+
+    let subtotal=0;
+    document.getElementById('summaryItems').innerHTML=items.map(item=>{
+        const book=booksCache[item.book_id]||{title:'Sách #'+item.book_id,author:'',price:0};
+        const price=parseFloat(book.price)||0;
+        const lineTotal=price*item.quantity;
+        subtotal+=lineTotal;
+        const color=coverColors[item.book_id%coverColors.length];
+        return `<div class="summary-item">
+            <div class="si-img" style="background:${color}">${['📖','📚','📘','📗','📕'][item.book_id%5]}</div>
+            <div class="si-info"><h5>${book.title}</h5><span>${item.quantity} × $${price.toFixed(2)}</span></div>
+            <div class="si-price">$${lineTotal.toFixed(2)}</div>
+        </div>`;
+    }).join('');
+
+    const shipping=subtotal>=50?0:5;
+    const total=subtotal+shipping;
+    document.getElementById('summaryTotals').innerHTML=`
+        <div class="summary-row"><span>Tạm tính (${items.length} sản phẩm)</span><span>$${subtotal.toFixed(2)}</span></div>
+        <div class="summary-row"><span>Phí vận chuyển</span><span>${shipping===0?'<span style="color:#16a34a">Miễn phí</span>':'$'+shipping.toFixed(2)}</span></div>
+        <div class="summary-row total"><span>Tổng cộng</span><span style="color:#dc2626">$${total.toFixed(2)}</span></div>
+    `;
+    document.getElementById('btnPlaceOrder').disabled=false;
+    document.getElementById('btnPlaceOrder').innerHTML=`<i class="fas fa-lock"></i> Đặt hàng ($${total.toFixed(2)})`;
+
+    // Store for order placement
+    window._subtotal=subtotal;
+    window._shipping=shipping;
+    window._total=total;
+}
+
+function validateForm(){
+    const fields=[
+        {id:'fullName',label:'Họ và tên'},
+        {id:'phone',label:'Số điện thoại'},
+        {id:'city',label:'Tỉnh/Thành phố'},
+        {id:'district',label:'Quận/Huyện'},
+        {id:'address',label:'Địa chỉ'}
+    ];
+    for(const f of fields){
+        const v=document.getElementById(f.id).value.trim();
+        if(!v){
+            showToast('Vui lòng nhập '+f.label,'error');
+            document.getElementById(f.id).focus();
+            return false;
+        }
+    }
+    const phone=document.getElementById('phone').value.trim();
+    if(!/^[0-9]{9,11}$/.test(phone)){
+        showToast('Số điện thoại không hợp lệ','error');
+        document.getElementById('phone').focus();
+        return false;
+    }
+    return true;
+}
+
+async function placeOrder(){
+    if(!validateForm())return;
+
+    const btn=document.getElementById('btnPlaceOrder');
+    btn.disabled=true;
+    btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
+
+    const cid=localStorage.getItem('customer_id');
+    const fullAddress=document.getElementById('address').value.trim()+', '+document.getElementById('district').value.trim()+', '+document.getElementById('city').value.trim();
+    const note=document.getElementById('note').value.trim();
+
+    try{
+        // 1. Create order
+        const orderPayload={
+            customer_id:parseInt(cid),
+            total_amount:window._subtotal.toFixed(2),
+            status:'pending'
+        };
+        const or=await authFetch(API+'/orders/',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(orderPayload)});
+        if(!or.ok){const d=await or.json();showToast('Lỗi tạo đơn: '+JSON.stringify(d),'error');btn.disabled=false;btn.innerHTML='<i class="fas fa-lock"></i> Đặt hàng';return}
+        const order=await or.json();
+
+        // 2. Create order items
+        const items=cartData.items||[];
+        for(const item of items){
+            const book=booksCache[item.book_id]||{price:0};
+            await authFetch(API+'/order-items/',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({order:order.id,book_id:item.book_id,quantity:item.quantity,price:parseFloat(book.price||0).toFixed(2)})});
+        }
+
+        // 3. Create payment
+        const payMethod=selectedPayMethod==='cod'?'cash':selectedPayMethod;
+        await authFetch(API+'/payments/',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({order_id:order.id,amount:window._subtotal.toFixed(2),method:payMethod,status:'pending'})});
+
+        // 4. Create shipment
+        await authFetch(API+'/shipments/',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({order_id:order.id,address:fullAddress,tracking_number:'',status:'preparing'})});
+
+        // 5. Clear cart items
+        for(const item of items){
+            await authFetch(API+'/cart-items/'+item.id+'/',{method:'DELETE'});
+        }
+
+        showToast('🎉 Đặt hàng thành công! Mã đơn: #'+order.id,'success',5000);
+        setTimeout(()=>location.href='/pages/my-orders.html',2000);
+    }catch(e){
+        showToast('Lỗi đặt hàng: '+e.message,'error');
+        btn.disabled=false;
+        btn.innerHTML='<i class="fas fa-lock"></i> Đặt hàng';
+    }
+}
+
+loadData();
+</script>
+</body>
+</html>

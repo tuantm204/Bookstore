@@ -1,90 +1,278 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BookStore - Customers</title>
-    <style>
-        *{margin:0;padding:0;box-sizing:border-box}
-        body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background:#f4f6f9;color:#333}
-        .navbar{background:#2c3e50;color:#fff;padding:15px 30px;display:flex;justify-content:space-between;align-items:center}
-        .navbar h1{font-size:24px}.nav-links a{color:#fff;text-decoration:none;margin-left:20px;font-size:16px}
-        .nav-links a:hover{text-decoration:underline}
-        .container{max-width:1100px;margin:30px auto;padding:0 20px}
-        h2{margin-bottom:20px}
-        .card{background:#fff;padding:20px;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.1);margin-bottom:20px}
-        .card h3{margin-bottom:15px}
-        .form-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px}
-        .form-row input,.form-row select{flex:1;padding:10px;border:1px solid #ddd;border-radius:6px;font-size:14px;min-width:120px}
-        .btn{padding:10px 20px;border:none;border-radius:6px;cursor:pointer;font-size:14px;font-weight:bold}
-        .btn-primary{background:#3498db;color:#fff}.btn-primary:hover{background:#2980b9}
-        .btn-danger{background:#e74c3c;color:#fff}.btn-danger:hover{background:#c0392b}
-        .btn-sm{padding:6px 12px;font-size:12px}
-        table{width:100%;border-collapse:collapse;background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.1)}
-        th,td{padding:12px 15px;text-align:left;border-bottom:1px solid #eee}
-        th{background:#2c3e50;color:#fff}tr:hover{background:#f8f9fa}
-        .msg{padding:10px 15px;border-radius:6px;margin-bottom:15px;display:none}
-        .msg.ok{background:#d4edda;color:#155724;display:block}
-        .msg.err{background:#f8d7da;color:#721c24;display:block}
-    </style>
-</head>
+<html lang="vi">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Quản lý Khách hàng - BookStore Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Inter',sans-serif;background:#f1f5f9;color:#1e293b;display:flex;min-height:100vh}a{text-decoration:none;color:inherit}
+.sidebar{width:260px;background:#0f172a;color:#94a3b8;display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100}
+.sidebar-brand{padding:20px 24px;display:flex;align-items:center;gap:10px;font-size:20px;font-weight:800;color:#fff;border-bottom:1px solid #1e293b}.sidebar-brand i{color:#3b82f6}
+.sidebar-menu{flex:1;padding:16px 12px;overflow-y:auto}
+.menu-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;padding:16px 12px 8px;color:#475569}
+.menu-item{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;font-size:14px;color:#94a3b8;transition:all .2s;margin-bottom:2px}
+.menu-item:hover{background:#1e293b;color:#e2e8f0}.menu-item.active{background:#1d4ed8;color:#fff}.menu-item i{width:20px;text-align:center}
+.sidebar-footer{padding:16px;border-top:1px solid #1e293b}
+.user-card{display:flex;align-items:center;gap:10px;padding:8px}
+.user-avatar{width:36px;height:36px;border-radius:8px;background:#3b82f6;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:14px}
+.user-info .name{font-size:13px;font-weight:600;color:#e2e8f0}.user-info .role{font-size:11px;color:#64748b}
+.main{flex:1;margin-left:260px}
+.topbar{background:#fff;padding:16px 28px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 1px 3px rgba(0,0,0,.06);position:sticky;top:0;z-index:50}
+.topbar h1{font-size:20px;font-weight:700;display:flex;align-items:center;gap:8px}.topbar h1 i{color:#2563eb}
+.topbar-actions{display:flex;gap:12px;align-items:center}
+.topbar-actions a,.topbar-actions button{background:none;border:none;color:#64748b;font-size:14px;cursor:pointer;display:flex;align-items:center;gap:6px;font-family:inherit}
+.btn-store{background:#eff6ff!important;color:#2563eb!important;padding:8px 16px;border-radius:8px;font-weight:600}
+.content{padding:28px}
+.card{background:#fff;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,.06);margin-bottom:24px}
+.card-header{padding:20px 24px;border-bottom:1px solid #f1f5f9;display:flex;align-items:center;justify-content:space-between}
+.card-header h3{font-size:16px;font-weight:700;display:flex;align-items:center;gap:8px}
+.card-body{padding:24px}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+.form-grid input,.form-grid select,.form-grid textarea{padding:10px 14px;border:2px solid #e2e8f0;border-radius:8px;font-size:14px;font-family:inherit}
+.form-grid input:focus,.form-grid select:focus,.form-grid textarea:focus{outline:none;border-color:#2563eb}
+.form-field{display:flex;flex-direction:column;gap:4px}
+.form-field label{font-size:12px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:.5px}
+.form-field input,.form-field select,.form-field textarea{padding:10px 14px;border:2px solid #e2e8f0;border-radius:8px;font-size:14px;font-family:inherit}
+.form-field input:focus,.form-field select:focus,.form-field textarea:focus{outline:none;border-color:#2563eb}
+.btn{padding:10px 20px;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600;font-family:inherit;display:inline-flex;align-items:center;gap:6px;transition:all .2s}
+.btn-primary{background:#2563eb;color:#fff}.btn-primary:hover{background:#1d4ed8}
+.btn-danger{background:#ef4444;color:#fff}.btn-danger:hover{background:#dc2626}
+.btn-success{background:#16a34a;color:#fff}.btn-success:hover{background:#15803d}
+.btn-warning{background:#f59e0b;color:#fff}.btn-warning:hover{background:#d97706}
+.btn-info{background:#0ea5e9;color:#fff}.btn-info:hover{background:#0284c7}
+.btn-secondary{background:#64748b;color:#fff}.btn-secondary:hover{background:#475569}
+.btn-sm{padding:6px 12px;font-size:12px}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;padding:12px 20px;font-size:12px;font-weight:700;color:#64748b;text-transform:uppercase;background:#f8fafc}
+td{padding:12px 20px;font-size:14px;border-bottom:1px solid #f8fafc}
+tr:hover td{background:#f8fafc}
+.badge{display:inline-block;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:600}
+.badge-pending{background:#fef3c7;color:#92400e}
+.badge-paid,.badge-completed{background:#dcfce7;color:#166534}
+.badge-shipped,.badge-in_transit{background:#dbeafe;color:#1e40af}
+.badge-delivered{background:#d1fae5;color:#065f46}
+.badge-cancelled,.badge-failed{background:#fee2e2;color:#991b1b}
+.badge-preparing{background:#fef3c7;color:#92400e}
+.msg{padding:12px 16px;border-radius:8px;margin-bottom:16px;display:none;font-size:14px}
+.msg.ok{background:#dcfce7;color:#166534;display:block}.msg.err{background:#fee2e2;color:#991b1b;display:block}
+.modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);z-index:1000;justify-content:center;align-items:center}
+.modal-overlay.active{display:flex}
+.modal{background:#fff;border-radius:16px;padding:32px;width:90%;max-width:640px;max-height:85vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.modal h3{margin-bottom:20px;font-size:20px;display:flex;align-items:center;gap:8px}
+.modal-actions{display:flex;gap:10px;margin-top:24px;justify-content:flex-end}
+.form-label{font-size:12px;font-weight:700;color:#64748b;text-transform:uppercase;margin-bottom:6px;display:block;letter-spacing:.5px}
+.cart-section{background:#f8fafc;padding:16px;border-radius:10px;margin-top:16px;border:1px solid #e2e8f0}
+.cart-section h4{margin-bottom:10px;font-size:14px;font-weight:700;display:flex;align-items:center;gap:6px}
+.cart-item{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:#fff;border-radius:8px;margin-bottom:6px;border:1px solid #e2e8f0}
+.qty-controls{display:flex;align-items:center;gap:6px}
+.qty-btn{width:28px;height:28px;border:1px solid #e2e8f0;border-radius:6px;cursor:pointer;font-weight:bold;background:#fff;font-size:14px;display:flex;align-items:center;justify-content:center}
+.qty-btn:hover{background:#f1f5f9}
+.badge-job{background:#ede9fe;color:#6d28d9}
+.divider{border:none;border-top:1px solid #e2e8f0;margin:16px 0}
+</style></head>
 <body>
-    <nav class="navbar">
-        <h1>📚 BookStore</h1>
-        <div class="nav-links">
-            <a href="/">Home</a>
-            <a href="/pages/books.html">Books</a>
-            <a href="/pages/cart.html">Cart</a>
-            <a href="/pages/customers.html">Customers</a>
-            <a href="/pages/orders.html">Orders</a>
-        </div>
-    </nav>
-    <div class="container">
-        <h2>👤 Customers Management</h2>
-        <div id="msg" class="msg"></div>
-        <div class="card">
-            <h3>Add New Customer</h3>
-            <div class="form-row">
-                <input type="text" id="name" placeholder="Name">
-                <input type="email" id="email" placeholder="Email">
-                <input type="text" id="phone" placeholder="Phone">
-                <input type="text" id="address" placeholder="Address">
-            </div>
-            <button class="btn btn-primary" onclick="addItem()">Add Customer</button>
-        </div>
-        <table>
-            <thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Phone</th><th>Address</th><th>Created</th><th>Actions</th></tr></thead>
-            <tbody id="tbl"><tr><td colspan="7">Loading...</td></tr></tbody>
-        </table>
-    </div>
+<aside class="sidebar">
+<div class="sidebar-brand"><i class="fas fa-book-open"></i> BookStore</div>
+<nav class="sidebar-menu">
+<div class="menu-label">Tổng quan</div>
+<a class="menu-item" href="/pages/admin.html"><i class="fas fa-gauge-high"></i> Dashboard</a>
+<div class="menu-label">Quản lý</div>
+<a class="menu-item" href="/pages/books.html"><i class="fas fa-book"></i> Sách</a>
+<a class="menu-item" href="/pages/catalogs.html"><i class="fas fa-layer-group"></i> Danh mục</a>
+<a class="menu-item active" href="/pages/customers.html"><i class="fas fa-users"></i> Khách hàng</a>
+<a class="menu-item" href="/pages/orders.html"><i class="fas fa-box"></i> Đơn hàng</a>
+<a class="menu-item" href="/pages/cart.html"><i class="fas fa-shopping-cart"></i> Giỏ hàng</a>
+<div class="menu-label">Tài chính & Vận chuyển</div>
+<a class="menu-item" href="/pages/payments.html"><i class="fas fa-credit-card"></i> Thanh toán</a>
+<a class="menu-item" href="/pages/shipments.html"><i class="fas fa-truck"></i> Vận chuyển</a>
+<div class="menu-label">Nội dung</div>
+<a class="menu-item" href="/pages/comments.html"><i class="fas fa-comments"></i> Bình luận</a>
+<a class="menu-item" href="/pages/recommender.html"><i class="fas fa-robot"></i> Gợi ý AI</a>
+<div class="menu-label">Nhân sự</div>
+<a class="menu-item" href="/pages/staffs.html"><i class="fas fa-user-tie"></i> Nhân viên</a>
+<a class="menu-item" href="/pages/managers.html"><i class="fas fa-user-shield"></i> Quản lý</a>
+</nav>
+<div class="sidebar-footer"><div class="user-card">
+<div class="user-avatar" id="sideAvatar">A</div>
+<div class="user-info"><div class="name" id="sideName">Admin</div><div class="role" id="sideRole">admin</div></div>
+</div></div>
+</aside>
+<div class="main">
+<div class="topbar"><h1><i class="fas fa-users"></i> Quản lý Khách hàng</h1>
+<div class="topbar-actions"><a href="/" class="btn-store"><i class="fas fa-store"></i> Cửa hàng</a>
+<button onclick="logout()"><i class="fas fa-sign-out-alt"></i> Đăng xuất</button></div></div>
+<div class="content"><div id="msg" class="msg"></div>
+<div class="card">
+<div class="card-header"><h3><i class="fas fa-plus-circle"></i> Thêm khách hàng mới</h3></div>
+<div class="card-body">
+<div class="form-label">Thông tin cá nhân</div>
+<div class="form-grid">
+<div class="form-field"><label>Họ tên *</label><input type="text" id="full_name" placeholder="Nhập họ tên"></div>
+<div class="form-field"><label>Email *</label><input type="email" id="email" placeholder="email@example.com"></div>
+<div class="form-field"><label>Số điện thoại</label><input type="text" id="phone" placeholder="0123456789"></div>
+<div class="form-field"><label>Nghề nghiệp</label><input type="text" id="job" placeholder="Nghề nghiệp"></div>
+</div>
+<div class="form-label" style="margin-top:16px">Địa chỉ</div>
+<div class="form-grid">
+<div class="form-field"><label>Đường</label><input type="text" id="street" placeholder="Số nhà, tên đường"></div>
+<div class="form-field"><label>Thành phố</label><input type="text" id="city" placeholder="Thành phố"></div>
+<div class="form-field"><label>Tỉnh/Bang</label><input type="text" id="state" placeholder="Tỉnh/Bang"></div>
+<div class="form-field"><label>Mã bưu chính</label><input type="text" id="zip_code" placeholder="Mã bưu chính"></div>
+</div>
+<button class="btn btn-primary" style="margin-top:20px" onclick="addCustomer()"><i class="fas fa-plus"></i> Thêm khách hàng</button>
+</div></div>
+<div class="card"><div class="card-header"><h3><i class="fas fa-list"></i> Danh sách khách hàng</h3></div>
+<table><thead><tr><th>ID</th><th>Họ tên</th><th>Email</th><th>SĐT</th><th>Nghề nghiệp</th><th>Địa chỉ</th><th>Cập nhật</th><th>Thao tác</th></tr></thead>
+<tbody id="tbl"><tr><td colspan="8">Đang tải...</td></tr></tbody></table></div>
+<!-- Edit Modal -->
+<div class="modal-overlay" id="editModal"><div class="modal">
+<h3><i class="fas fa-edit"></i> Cập nhật khách hàng</h3>
+<input type="hidden" id="edit_id">
+<div class="form-label">Thông tin cá nhân</div>
+<div class="form-grid">
+<div class="form-field"><label>Họ tên</label><input type="text" id="edit_full_name"></div>
+<div class="form-field"><label>Email</label><input type="email" id="edit_email"></div>
+<div class="form-field"><label>Số điện thoại</label><input type="text" id="edit_phone"></div>
+<div class="form-field"><label>Nghề nghiệp</label><input type="text" id="edit_job"></div>
+</div><hr class="divider">
+<div class="form-label">Địa chỉ</div>
+<div class="form-grid">
+<div class="form-field"><label>Đường</label><input type="text" id="edit_street"></div>
+<div class="form-field"><label>Thành phố</label><input type="text" id="edit_city"></div>
+<div class="form-field"><label>Tỉnh/Bang</label><input type="text" id="edit_state"></div>
+<div class="form-field"><label>Mã bưu chính</label><input type="text" id="edit_zip_code"></div>
+</div>
+<div class="cart-section">
+<h4><i class="fas fa-shopping-cart"></i> Giỏ hàng khách hàng</h4>
+<div id="cartContent"><em style="color:#94a3b8">Đang tải...</em></div>
+<div class="form-grid" style="margin-top:12px">
+<input type="number" id="add_book_id" placeholder="Book ID" min="1">
+<input type="number" id="add_qty" placeholder="SL" min="1" value="1" style="max-width:80px">
+<button class="btn btn-info btn-sm" onclick="addItemToCart()"><i class="fas fa-plus"></i> Thêm</button>
+</div></div>
+<div class="modal-actions">
+<button class="btn btn-secondary" onclick="closeModal()">Hủy</button>
+<button class="btn btn-success" onclick="saveCustomer()"><i class="fas fa-save"></i> Lưu thay đổi</button>
+</div></div></div>
+
+<!-- Reset Password Modal -->
+<div class="modal-overlay" id="resetPwModal"><div class="modal">
+<h3><i class="fas fa-key" style="color:#f59e0b"></i> Đặt lại mật khẩu</h3>
+<p style="margin-bottom:16px;color:#64748b">Đặt lại mật khẩu cho khách hàng: <strong id="resetPwName"></strong></p>
+<input type="hidden" id="resetPw_customerId">
+<div class="form-grid">
+<input type="password" id="resetPw_newPassword" placeholder="Mật khẩu mới (tối thiểu 6 ký tự) *" style="grid-column:1/-1">
+<input type="password" id="resetPw_confirmPassword" placeholder="Xác nhận mật khẩu *" style="grid-column:1/-1">
+</div>
+<div class="modal-actions">
+<button class="btn btn-secondary" onclick="closeResetPw()">Hủy</button>
+<button class="btn btn-warning" onclick="doResetPw()"><i class="fas fa-key"></i> Đặt lại mật khẩu</button>
+</div></div></div>
+</div></div>
 <script>
-const API='/api',SVC='customers';
 const TOKEN=localStorage.getItem('access_token');
 if(!TOKEN)window.location.href='/pages/login.html';
 const _fetch=window.fetch;window.fetch=(url,opts={})=>{opts.headers={...(opts.headers||{}),'Authorization':'Bearer '+TOKEN};return _fetch(url,opts)};
 function showMsg(t,ok){const e=document.getElementById('msg');e.textContent=t;e.className='msg '+(ok?'ok':'err');setTimeout(()=>e.className='msg',3000)}
+function logout(){localStorage.clear();window.location.href='/pages/login.html'}
+try{const u=JSON.parse(localStorage.getItem('user')||'{}');document.getElementById('sideName').textContent=u.full_name||u.username||'Admin';document.getElementById('sideRole').textContent=u.role||'admin';
+document.getElementById('sideAvatar').textContent=(u.full_name||u.username||'A')[0].toUpperCase();
+if(!['admin','manager','staff'].includes(u.role))window.location.href='/';}catch(e){}
+
+const API='/api',SVC='customers';let currentEditId=null,currentCartId=null;
 async function load(){
-    try{
-        const r=await fetch(API+'/'+SVC+'/');const d=await r.json();
-        const items=Array.isArray(d)?d:(d.results||[]);
-        const tb=document.getElementById('tbl');
-        if(!items.length){tb.innerHTML='<tr><td colspan="7">No customers yet</td></tr>';return}
-        tb.innerHTML=items.map(c=>`<tr>
-            <td>${c.id}</td><td>${c.name}</td><td>${c.email}</td><td>${c.phone||'-'}</td><td>${c.address||'-'}</td>
-            <td>${new Date(c.created_at).toLocaleDateString()}</td>
-            <td><button class="btn btn-danger btn-sm" onclick="del(${c.id})">🗑</button></td>
-            </tr>`).join('');
-    }catch(e){document.getElementById('tbl').innerHTML='<tr><td colspan="7">Error loading</td></tr>'}
+try{const r=await fetch(API+'/'+SVC+'/');const d=await r.json();
+const items=Array.isArray(d)?d:(d.results||[]);const tb=document.getElementById('tbl');
+if(!items.length){tb.innerHTML='<tr><td colspan="8">Chưa có khách hàng</td></tr>';return}
+tb.innerHTML=items.map(c=>{const addr=c.full_address||'-';
+const jobBadge=c.job?'<span class="badge badge-job">'+c.job+'</span>':'<span style="color:#94a3b8">-</span>';
+return `<tr><td>${c.id}</td><td><strong>${c.full_name}</strong></td><td>${c.email}</td><td>${c.phone||'-'}</td>
+<td>${jobBadge}</td><td title="${addr}">${addr.length>30?addr.substring(0,30)+'...':addr}</td>
+<td>${c.updated_at?new Date(c.updated_at).toLocaleDateString('vi-VN'):'-'}</td>
+<td><button class="btn btn-warning btn-sm" onclick="openEdit(${c.id})" title="Sửa"><i class="fas fa-edit"></i></button>
+<button class="btn btn-info btn-sm" onclick="openResetPw(${c.id},'${(c.full_name||'').replace(/'/g,"\\'")}')" title="Đặt lại mật khẩu"><i class="fas fa-key"></i></button>
+<button class="btn btn-danger btn-sm" onclick="del(${c.id})" title="Xóa"><i class="fas fa-trash"></i></button></td></tr>`}).join('');
+}catch(e){document.getElementById('tbl').innerHTML='<tr><td colspan="8">Lỗi tải dữ liệu</td></tr>'}}
+async function addCustomer(){
+const data={full_name:document.getElementById('full_name').value,email:document.getElementById('email').value,phone:document.getElementById('phone').value,job:document.getElementById('job').value,street:document.getElementById('street').value,city:document.getElementById('city').value,state:document.getElementById('state').value,zip_code:document.getElementById('zip_code').value};
+if(!data.full_name||!data.email){showMsg('Họ tên và Email là bắt buộc',false);return}
+const r=await fetch(API+'/'+SVC+'/',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+if(r.ok){showMsg('Thêm khách hàng thành công!',true);['full_name','email','phone','job','street','city','state','zip_code'].forEach(id=>document.getElementById(id).value='');load()}
+else{const e=await r.json();showMsg(JSON.stringify(e),false)}}
+async function del(id){if(!confirm('Xóa khách hàng #'+id+'?'))return;await fetch(API+'/'+SVC+'/'+id+'/',{method:'DELETE'});showMsg('Đã xóa',true);load()}
+async function openEdit(id){currentEditId=id;
+try{const r=await fetch(API+'/'+SVC+'/'+id+'/');const c=await r.json();
+document.getElementById('edit_id').value=c.id;
+document.getElementById('edit_full_name').value=c.full_name||'';
+document.getElementById('edit_email').value=c.email||'';
+document.getElementById('edit_phone').value=c.phone||'';
+document.getElementById('edit_job').value=c.job||'';
+document.getElementById('edit_street').value=c.street||'';
+document.getElementById('edit_city').value=c.city||'';
+document.getElementById('edit_state').value=c.state||'';
+document.getElementById('edit_zip_code').value=c.zip_code||'';
+document.getElementById('editModal').classList.add('active');
+loadCustomerCart(id);
+}catch(e){showMsg('Lỗi tải thông tin',false)}}
+function closeModal(){document.getElementById('editModal').classList.remove('active');currentEditId=null;currentCartId=null}
+async function saveCustomer(){const id=currentEditId;if(!id)return;
+const data={full_name:document.getElementById('edit_full_name').value,email:document.getElementById('edit_email').value,phone:document.getElementById('edit_phone').value,job:document.getElementById('edit_job').value,street:document.getElementById('edit_street').value,city:document.getElementById('edit_city').value,state:document.getElementById('edit_state').value,zip_code:document.getElementById('edit_zip_code').value};
+const r=await fetch(API+'/'+SVC+'/'+id+'/update-info/',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+if(r.ok){showMsg('Cập nhật thành công!',true);closeModal();load()}
+else{const e=await r.json();showMsg('Lỗi: '+JSON.stringify(e),false)}}
+async function loadCustomerCart(customerId){
+const container=document.getElementById('cartContent');container.innerHTML='<em style="color:#94a3b8">Đang tải...</em>';
+try{const r=await fetch(API+'/'+SVC+'/'+customerId+'/cart/');
+if(!r.ok){container.innerHTML='<em style="color:#94a3b8">Không tìm thấy giỏ hàng</em>';return}
+const cart=await r.json();currentCartId=cart.id;const items=cart.items||[];
+if(!items.length){container.innerHTML='<em style="color:#94a3b8">Giỏ hàng trống</em>';return}
+container.innerHTML=items.map(item=>'<div class="cart-item"><div><i class="fas fa-book"></i> Sách #'+item.book_id+'</div><div class="qty-controls"><button class="qty-btn" onclick="updateQty('+customerId+','+item.id+','+(item.quantity-1)+')">-</button><span style="min-width:30px;text-align:center;font-weight:600">'+item.quantity+'</span><button class="qty-btn" onclick="updateQty('+customerId+','+item.id+','+(item.quantity+1)+')">+</button><button class="btn btn-danger btn-sm" onclick="removeItem('+customerId+','+item.id+')" style="margin-left:8px"><i class="fas fa-trash"></i></button></div></div>').join('');
+}catch(e){container.innerHTML='<em style="color:#ef4444">Lỗi tải giỏ hàng</em>'}}
+async function addItemToCart(){if(!currentEditId)return;
+const bookId=document.getElementById('add_book_id').value;const qty=document.getElementById('add_qty').value||1;
+if(!bookId){showMsg('Vui lòng nhập Book ID',false);return}
+const r=await fetch(API+'/'+SVC+'/'+currentEditId+'/cart/add-item/',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({book_id:parseInt(bookId),quantity:parseInt(qty)})});
+if(r.ok||r.status===200){document.getElementById('add_book_id').value='';document.getElementById('add_qty').value='1';loadCustomerCart(currentEditId)}
+else{const d=await r.json();showMsg(JSON.stringify(d),false)}}
+async function updateQty(customerId,itemId,newQty){if(newQty<=0){removeItem(customerId,itemId);return}
+await fetch(API+'/'+SVC+'/'+customerId+'/cart/update-item/'+itemId+'/',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({quantity:newQty})});
+loadCustomerCart(customerId)}
+async function removeItem(customerId,itemId){
+await fetch(API+'/'+SVC+'/'+customerId+'/cart/remove-item/'+itemId+'/',{method:'DELETE'});loadCustomerCart(customerId)}
+document.getElementById('editModal').addEventListener('click',function(e){if(e.target===this)closeModal()});
+document.getElementById('resetPwModal').addEventListener('click',function(e){if(e.target===this)closeResetPw()});
+
+function openResetPw(customerId,name){
+document.getElementById('resetPw_customerId').value=customerId;
+document.getElementById('resetPwName').textContent=name||'#'+customerId;
+document.getElementById('resetPw_newPassword').value='';
+document.getElementById('resetPw_confirmPassword').value='';
+document.getElementById('resetPwModal').classList.add('active');
 }
-async function addItem(){
-    const data={name:document.getElementById('name').value,email:document.getElementById('email').value,phone:document.getElementById('phone').value,address:document.getElementById('address').value};
-    if(!data.name||!data.email){showMsg('Name and Email required',false);return}
-    const r=await fetch(API+'/'+SVC+'/',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
-    if(r.ok){showMsg('Customer added! (Cart auto-created)',true);['name','email','phone','address'].forEach(id=>document.getElementById(id).value='');load()}
-    else{const e=await r.json();showMsg(JSON.stringify(e),false)}
+function closeResetPw(){document.getElementById('resetPwModal').classList.remove('active')}
+
+async function doResetPw(){
+const customerId=document.getElementById('resetPw_customerId').value;
+const newPw=document.getElementById('resetPw_newPassword').value;
+const confirmPw=document.getElementById('resetPw_confirmPassword').value;
+if(!newPw||newPw.length<6){showMsg('Mật khẩu mới phải có tối thiểu 6 ký tự',false);return}
+if(newPw!==confirmPw){showMsg('Mật khẩu xác nhận không khớp',false);return}
+try{
+// First get customer to find user_id via email
+const cr=await fetch(API+'/'+SVC+'/'+customerId+'/');const cust=await cr.json();
+if(!cust.email){showMsg('Không tìm thấy email khách hàng',false);return}
+// Find auth user by listing users and matching email
+const ur=await fetch(API+'/auth/users/');const users=await ur.json();
+const authUsers=Array.isArray(users)?users:(users.results||[]);
+const authUser=authUsers.find(u=>u.email===cust.email);
+if(!authUser){showMsg('Không tìm thấy tài khoản đăng nhập của khách hàng này',false);return}
+// Reset password via auth service
+const rr=await fetch(API+'/auth/users/'+authUser.id+'/reset-password/',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({new_password:newPw})});
+const rd=await rr.json();
+if(rr.ok){showMsg('Đặt lại mật khẩu thành công cho '+cust.full_name+'!',true);closeResetPw()}
+else{showMsg('Lỗi: '+(rd.error||JSON.stringify(rd)),false)}
+}catch(e){showMsg('Lỗi: '+e.message,false)}
 }
-async function del(id){if(!confirm('Delete customer #'+id+'?'))return;await fetch(API+'/'+SVC+'/'+id+'/',{method:'DELETE'});load()}
+
 load();
-</script>
-</body>
-</html>
+</script></body></html>

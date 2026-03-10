@@ -12,11 +12,14 @@ graph TB
     end
 
     subgraph Gateway["⚡ API Gateway — port 8000"]
-        GW["Django API Gateway<br/>SQLite<br/>Proxy + Static Pages"]
+        GW["Django API Gateway<br/>JWT Middleware + RBAC<br/>SQLite + HTML Templates"]
     end
 
     subgraph Services["🔧 Microservices Layer"]
         direction TB
+        subgraph Auth["🔐 Authentication"]
+            AS["🔐 Auth Service<br/>:8012"]
+        end
         subgraph People["👥 People Management"]
             CS["👤 Customer Service<br/>:8001"]
             SS["👨‍💼 Staff Service<br/>:8002"]
@@ -47,6 +50,7 @@ graph TB
     Browser -->|"HTTP :8000"| GW
     Postman -->|"HTTP :8000"| GW
 
+    GW -->|"JWT verify"| AS
     GW -->|"/api/customers/*"| CS
     GW -->|"/api/staffs/*"| SS
     GW -->|"/api/managers/*"| MS
@@ -59,6 +63,7 @@ graph TB
     GW -->|"/api/comments/*"| CMS
     GW -->|"/api/recommend/*"| RS
 
+    AS --> DB
     CS --> DB
     SS --> DB
     MS --> DB
@@ -74,7 +79,47 @@ graph TB
 
 ---
 
-## 2. Inter-Service Communication
+## 2. JWT Authentication Flow
+
+```mermaid
+sequenceDiagram
+    participant C as 🖥️ Client
+    participant GW as ⚡ Gateway :8000
+    participant MW as 🔒 JWT Middleware
+    participant AS as 🔐 Auth :8012
+    participant SVC as ⚙️ Backend Service
+
+    Note over C,AS: Login Flow
+    C->>GW: POST /api/auth/login/<br/>{username, password}
+    GW->>AS: Proxy to Auth Service
+    AS->>AS: Verify password (SHA-256 + salt)
+    AS->>AS: Generate JWT tokens (HS256)
+    AS-->>GW: {access_token, refresh_token, user}
+    GW-->>C: 200 OK + tokens
+
+    Note over C,SVC: Authenticated API Request
+    C->>GW: GET /api/books/<br/>Authorization: Bearer <token>
+    GW->>MW: Check JWT token
+    MW->>MW: Decode token (HS256)
+    MW->>MW: Verify type=access, not expired
+    MW->>MW: Check role permissions for endpoint
+    MW-->>GW: OK - role authorized
+    GW->>SVC: Proxy request to Book Service
+    SVC-->>GW: 200 OK + data
+    GW-->>C: 200 OK + data
+
+    Note over C,SVC: Token Expired Flow
+    C->>GW: GET /api/books/<br/>Authorization: Bearer <expired_token>
+    GW->>MW: Check JWT token
+    MW-->>C: 401 Token has expired
+    C->>GW: POST /api/auth/refresh/<br/>{refresh_token}
+    GW->>AS: Proxy to Auth Service
+    AS-->>C: {new access_token}
+```
+
+---
+
+## 3. Inter-Service Communication
 
 ```mermaid
 graph LR
@@ -82,6 +127,7 @@ graph LR
         GW["⚡ API Gateway<br/>:8000"]
     end
 
+    AS["🔐 Auth<br/>:8012"]
     CS["👤 Customer<br/>:8001"]
     BS["📖 Book<br/>:8005"]
     CRS["🛒 Cart<br/>:8006"]
@@ -90,6 +136,7 @@ graph LR
     SHS["🚚 Shipment<br/>:8009"]
     RS["🤖 Recommender<br/>:8011"]
 
+    GW -- "JWT verify<br/>every request" --> AS
     CS -- "① POST /carts/<br/>auto-create cart" --> CRS
     CRS -- "② GET /books/{id}<br/>verify book exists" --> BS
 
@@ -100,6 +147,7 @@ graph LR
 
     RS -- "⑦ GET /books/<br/>fetch all books" --> BS
 
+    style AS fill:#ffebee
     style CS fill:#e1f5fe
     style BS fill:#fff3e0
     style CRS fill:#e8f5e9
@@ -111,12 +159,13 @@ graph LR
 
 ---
 
-## 3. Database Architecture (Database per Service)
+## 4. Database Architecture (Database per Service)
 
 ```mermaid
 graph TB
     subgraph MySQL["🗄️ MySQL 8.0 Server (port 3307)"]
         direction LR
+        DB0[(auth_db)]
         DB1[(customer_db)]
         DB2[(staff_db)]
         DB3[(manager_db)]
@@ -130,6 +179,7 @@ graph TB
         DB11[(recommend_db)]
     end
 
+    AS["🔐 Auth :8012"] --> DB0
     CS["👤 Customer :8001"] --> DB1
     SS["👨‍💼 Staff :8002"] --> DB2
     MS["👔 Manager :8003"] --> DB3
@@ -145,7 +195,7 @@ graph TB
 
 ---
 
-## 4. Docker Network Topology
+## 5. Docker Network Topology
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────────────────────┐
@@ -153,20 +203,26 @@ graph TB
 │                                                                                          │
 │  ┌─────────────────────────────────────────────────────────────────────────────────────┐  │
 │  │                         🌐  API Gateway (api-gateway:8000)                          │  │
-│  │                         Django 4.2 + SQLite + HTML Templates                        │  │
+│  │                  Django 4.2 + JWT Middleware + RBAC + HTML Templates                 │  │
 │  │                         Exposed → localhost:8000                                     │  │
 │  └────────┬───────┬───────┬───────┬───────┬───────┬───────┬───────┬───────┬───────┬────┘  │
 │           │       │       │       │       │       │       │       │       │       │       │
-│    ┌──────▼──┐┌───▼───┐┌──▼────┐┌─▼─────┐┌▼──────┐┌▼─────┐┌▼─────┐┌▼─────┐┌▼─────┐┌▼───┐│
-│    │Customer ││ Staff ││Manager││Catalog││ Book  ││ Cart ││Order ││ Pay  ││ Ship ││Comm││
-│    │ :8001   ││ :8002 ││ :8003 ││ :8004 ││ :8005 ││ :8006││ :8007││ :8008││ :8009││entd││
-│    └───┬─────┘└──┬────┘└──┬────┘└──┬────┘└──┬────┘└──┬───┘└──┬───┘└──┬───┘└──┬───┘└──┬─┘│
-│        │         │        │        │        │        │       │       │       │       │   │
-│  ┌─────▼─────────▼────────▼────────▼────────▼────────▼───────▼───────▼───────▼───────▼─┐ │
+│  ┌────────▼───┐   │       │       │       │       │       │       │       │       │       │
+│  │🔐 Auth    │   │       │       │       │       │       │       │       │       │       │
+│  │  :8012    │   │       │       │       │       │       │       │       │       │       │
+│  │JWT+SHA256 │   │       │       │       │       │       │       │       │       │       │
+│  └───┬───────┘   │       │       │       │       │       │       │       │       │       │
+│      │           │       │       │       │       │       │       │       │       │       │
+│    ┌─▼───────┐┌──▼────┐┌─▼─────┐┌▼──────┐┌▼─────┐┌▼─────┐┌▼─────┐┌▼─────┐┌▼─────┐┌▼───┐│
+│    │Customer ││ Staff ││Manager││Catalog││ Book ││ Cart ││Order ││ Pay  ││ Ship ││Comm││
+│    │ :8001   ││ :8002 ││ :8003 ││ :8004 ││ :8005││ :8006││ :8007││ :8008││ :8009││ent ││
+│    └───┬─────┘└──┬────┘└──┬────┘└──┬────┘└──┬───┘└──┬───┘└──┬───┘└──┬───┘└──┬───┘└──┬─┘│
+│        │         │        │        │        │       │       │       │       │       │   │
+│  ┌─────▼─────────▼────────▼────────▼────────▼───────▼───────▼───────▼───────▼───────▼─┐ │
 │  │                        🗄️  MySQL 8.0 (mysql:3306)                                   │ │
 │  │                        Exposed → localhost:3307                                      │ │
-│  │    11 databases: customer_db | staff_db | manager_db | catalog_db | book_db          │ │
-│  │                   cart_db | order_db | pay_db | ship_db | comment_db | recommend_db  │ │
+│  │    12 databases: auth_db | customer_db | staff_db | manager_db | catalog_db          │ │
+│  │    book_db | cart_db | order_db | pay_db | ship_db | comment_db | recommend_db       │ │
 │  └─────────────────────────────────────────────────────────────────────────────────────┘ │
 │                                                                                          │
 │  ┌──────────────────────┐                                                                │
@@ -177,19 +233,22 @@ graph TB
 
 ---
 
-## 5. Request Flow — Order Creation (Business Workflow)
+## 6. Request Flow — Order Creation (Business Workflow)
 
 ```mermaid
 sequenceDiagram
     participant C as 🖥️ Client
     participant GW as ⚡ Gateway :8000
+    participant MW as 🔒 JWT Middleware
     participant OS as 📦 Order :8007
     participant CRS as 🛒 Cart :8006
     participant BS as 📖 Book :8005
     participant PS as 💳 Payment :8008
     participant SHS as 🚚 Shipment :8009
 
-    C->>GW: POST /api/orders/<br/>{customer_id, address}
+    C->>GW: POST /api/orders/<br/>{customer_id}
+    GW->>MW: Verify JWT token + role
+    MW-->>GW: OK (role authorized)
     GW->>OS: Proxy → POST /orders/
 
     Note over OS: Step 1: Fetch Cart
@@ -211,7 +270,7 @@ sequenceDiagram
 
     Note over OS: Step 5: Create Shipment
     OS->>SHS: POST /shipments/<br/>{order_id, address}
-    SHS-->>OS: {id, status: "processing"}
+    SHS-->>OS: {id, status: "preparing"}
 
     OS-->>GW: 201 {order + items}
     GW-->>C: 201 Created
@@ -219,16 +278,19 @@ sequenceDiagram
 
 ---
 
-## 6. Customer Registration Flow
+## 7. Customer Registration Flow
 
 ```mermaid
 sequenceDiagram
     participant C as 🖥️ Client
     participant GW as ⚡ Gateway :8000
+    participant MW as 🔒 JWT Middleware
     participant CS as 👤 Customer :8001
     participant CRS as 🛒 Cart :8006
 
-    C->>GW: POST /api/customers/<br/>{name, email, phone, address}
+    C->>GW: POST /api/customers/<br/>{full_name, email, phone, job, street, city, state, zip_code}
+    GW->>MW: Verify JWT token + role
+    MW-->>GW: OK
     GW->>CS: Proxy → POST /customers/
     CS->>CS: Save customer to DB
 
@@ -242,7 +304,50 @@ sequenceDiagram
 
 ---
 
-## 7. Technology Stack
+## 8. RBAC Permission Matrix
+
+```mermaid
+graph TD
+    subgraph Roles["🔑 Role Hierarchy"]
+        A["👑 Admin<br/>Full Access"]
+        M["👔 Manager<br/>Read/Write Most"]
+        S["👨‍💼 Staff<br/>Read/Write Limited"]
+        CU["👤 Customer<br/>Read + Own Data"]
+    end
+
+    subgraph Resources["📦 Protected Resources"]
+        AUTH["🔐 Auth Users"]
+        STAFF["👨‍💼 Staffs"]
+        MGR["👔 Managers"]
+        BOOK["📖 Books"]
+        CAT["📂 Catalogs"]
+        CUST["👤 Customers"]
+        ORD["📦 Orders"]
+        PAY["💳 Payments"]
+        CMT["💬 Comments"]
+    end
+
+    A -->|"Full CRUD + Assign Role"| AUTH
+    A -->|"Full CRUD"| STAFF
+    A -->|"Full CRUD"| MGR
+    A -->|"Full CRUD"| BOOK
+    M -->|"Read Only"| AUTH
+    M -->|"Read/Write"| STAFF
+    M -->|"Read Only"| MGR
+    M -->|"Read/Write/Delete"| BOOK
+    S -->|"Read Only"| STAFF
+    S -->|"Read/Write"| BOOK
+    CU -->|"Read Only"| BOOK
+
+    style A fill:#ff5722,color:#fff
+    style M fill:#ff9800,color:#fff
+    style S fill:#2196f3,color:#fff
+    style CU fill:#4caf50,color:#fff
+```
+
+---
+
+## 9. Technology Stack
 
 ```
 ┌────────────────────────────────────────────────────────────────────┐
@@ -250,33 +355,37 @@ sequenceDiagram
 ├────────────────────────────────────────────────────────────────────┤
 │                                                                    │
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────────────────┐ │
-│  │   Frontend    │  │  API Gateway │  │      Backend (×11)       │ │
+│  │   Frontend    │  │  API Gateway │  │      Backend (×12)       │ │
 │  ├──────────────┤  ├──────────────┤  ├──────────────────────────┤ │
 │  │ HTML5 / CSS3 │  │ Django 4.2   │  │ Django 4.2               │ │
-│  │ Bootstrap 5  │  │ SQLite       │  │ Django REST Framework    │ │
-│  │ JavaScript   │  │ Requests lib │  │ 3.15.1                   │ │
-│  │ Fetch API    │  │ URL Proxy    │  │ MySQL 8.0                │ │
-│  └──────────────┘  └──────────────┘  │ mysqlclient              │ │
-│                                       └──────────────────────────┘ │
+│  │ Custom CSS   │  │ JWT MW+RBAC  │  │ Django REST Framework    │ │
+│  │ Inter Font   │  │ SQLite       │  │ 3.15.1                   │ │
+│  │ Font Awesome │  │ Requests lib │  │ MySQL 8.0                │ │
+│  │ Vanilla JS   │  │ URL Proxy    │  │ mysqlclient              │ │
+│  │ Fetch API    │  │              │  │ PyJWT 2.8.0              │ │
+│  └──────────────┘  └──────────────┘  └──────────────────────────┘ │
+│                                                                    │
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────────────────┐ │
-│  │Infrastructure│  │   Language   │  │       Pattern            │ │
+│  │Infrastructure│  │   Security   │  │       Pattern            │ │
 │  ├──────────────┤  ├──────────────┤  ├──────────────────────────┤ │
-│  │ Docker       │  │ Python 3.11  │  │ API Gateway Pattern      │ │
-│  │ Docker       │  │              │  │ Database per Service     │ │
-│  │  Compose     │  │              │  │ Synchronous REST calls   │ │
-│  │ MySQL 8.0    │  │              │  │ Service Orchestration    │ │
+│  │ Docker       │  │ JWT (HS256)  │  │ API Gateway Pattern      │ │
+│  │ Docker       │  │ SHA-256+Salt │  │ Database per Service     │ │
+│  │  Compose 3.8 │  │ RBAC 4 roles │  │ Synchronous REST calls   │ │
+│  │ MySQL 8.0    │  │ Token Refresh│  │ Service Orchestration    │ │
+│  │ 14 Containers│  │ Seed Accounts│  │ Role-Based Access Ctrl   │ │
 │  └──────────────┘  └──────────────┘  └──────────────────────────┘ │
 └────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 8. Port Mapping Summary
+## 10. Port Mapping Summary
 
 | Service | Container Name | Internal Port | External Port | Database |
 |---------|---------------|---------------|---------------|----------|
 | MySQL | mysql | 3306 | **3307** | — |
 | API Gateway | api-gateway | 8000 | **8000** | SQLite |
+| Auth | auth-service | 8012 | 8012 | auth_db |
 | Customer | customer-service | 8001 | 8001 | customer_db |
 | Staff | staff-service | 8002 | 8002 | staff_db |
 | Manager | manager-service | 8003 | 8003 | manager_db |
@@ -286,16 +395,17 @@ sequenceDiagram
 | Order | order-service | 8007 | 8007 | order_db |
 | Payment | pay-service | 8008 | 8008 | pay_db |
 | Shipment | ship-service | 8009 | 8009 | ship_db |
-| Comment | comment-service | 8010 | 8010 | comment_db |
-| Recommender | recommender-service | 8011 | 8011 | recommend_db |
+| Comment | comment-rate-service | 8010 | 8010 | comment_db |
+| Recommender | recommender-ai-service | 8011 | 8011 | recommend_db |
 
 ---
 
-## 9. Service Routing Table (Gateway)
+## 11. Service Routing Table (Gateway)
 
 ```
 Client Request                      →  Gateway Proxy Target
 ─────────────────────────────────────────────────────────────
+/api/auth/*                         →  http://auth-service:8012/auth/*
 /api/customers/*                    →  http://customer-service:8001/customers/*
 /api/staffs/*                       →  http://staff-service:8002/staffs/*
 /api/managers/*                     →  http://manager-service:8003/managers/*
@@ -307,11 +417,23 @@ Client Request                      →  Gateway Proxy Target
 /api/order-items/*                  →  http://order-service:8007/order-items/*
 /api/payments/*                     →  http://pay-service:8008/payments/*
 /api/shipments/*                    →  http://ship-service:8009/shipments/*
-/api/comments/*                     →  http://comment-service:8010/comments/*
-/api/recommendations/*              →  http://recommender-service:8011/recommendations/*
-/api/recommend/*                    →  http://recommender-service:8011/recommend/*
+/api/comments/*                     →  http://comment-rate-service:8010/comments/*
+/api/recommendations/*              →  http://recommender-ai-service:8011/recommendations/*
+/api/recommend/*                    →  http://recommender-ai-service:8011/recommend/*
 ```
 
 ---
 
-> 💡 **Tip**: Các Mermaid diagram có thể xem trực tiếp trên **GitHub**, **GitLab**, hoặc dùng [Mermaid Live Editor](https://mermaid.live) để render.
+## 12. Seed Accounts (Auto-created on startup)
+
+| Username | Password | Role | Description |
+|----------|----------|------|-------------|
+| admin | admin123 | admin | Full system access |
+| staff1 | staff123 | staff | Staff member 1 |
+| staff2 | staff123 | staff | Staff member 2 |
+| manager1 | manager123 | manager | Manager 1 |
+| manager2 | manager123 | manager | Manager 2 |
+
+---
+
+> 💡 **Tip**: Cac Mermaid diagram co the xem truc tiep tren **GitHub**, **GitLab**, hoac dung [Mermaid Live Editor](https://mermaid.live) de render.

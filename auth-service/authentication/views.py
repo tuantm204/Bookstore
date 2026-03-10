@@ -351,3 +351,52 @@ def deactivate_user(request, user_id):
         'message': f'User {target_user.username} has been deactivated',
         'user': UserSerializer(target_user).data,
     })
+
+
+@api_view(['POST'])
+def admin_reset_password(request, user_id):
+    """Admin resets a user's password (admin/manager only)."""
+    auth_header = request.headers.get('Authorization', '')
+    if not auth_header.startswith('Bearer '):
+        return Response(
+            {'error': 'Not authenticated'},
+            status=status.HTTP_401_UNAUTHORIZED
+        )
+
+    token = auth_header[7:]
+    try:
+        payload = jwt.decode(token, settings.JWT_SECRET, algorithms=[settings.JWT_ALGORITHM])
+        requesting_user = User.objects.get(id=payload['user_id'])
+    except (jwt.InvalidTokenError, User.DoesNotExist):
+        return Response(
+            {'error': 'Invalid token'},
+            status=status.HTTP_401_UNAUTHORIZED
+        )
+
+    if requesting_user.role not in ('admin', 'manager'):
+        return Response(
+            {'error': 'Permission denied. Admin or Manager role required.'},
+            status=status.HTTP_403_FORBIDDEN
+        )
+
+    new_password = request.data.get('new_password')
+    if not new_password or len(new_password) < 6:
+        return Response(
+            {'error': 'New password is required and must be at least 6 characters'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    try:
+        target_user = User.objects.get(id=user_id)
+    except User.DoesNotExist:
+        return Response(
+            {'error': 'User not found'},
+            status=status.HTTP_404_NOT_FOUND
+        )
+
+    target_user.set_password(new_password)
+    target_user.save()
+    return Response({
+        'message': f'Password for user {target_user.username} has been reset successfully',
+        'user': UserSerializer(target_user).data,
+    })
